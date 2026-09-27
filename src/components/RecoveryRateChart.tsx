@@ -6,7 +6,8 @@
  * 100% basé sur les données réelles de la base Supabase (Zéro information fictive)
  */
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef } from 'react';
+import { printElement } from '../lib/printUtils.ts';
 import {
   ResponsiveContainer,
   BarChart,
@@ -74,6 +75,7 @@ export const RecoveryRateChart: React.FC<RecoveryRateChartProps> = ({
   establishments = [],
   onNavigateToTerrain,
 }) => {
+  const promotionPrintRef = useRef<HTMLDivElement>(null);
   // Navigation internal tabs
   const [activeSubTab, setActiveSubTab] = useState<'statistiques' | 'promotion'>('statistiques');
 
@@ -751,7 +753,7 @@ export const RecoveryRateChart: React.FC<RecoveryRateChartProps> = ({
       {/* 3. CONTENU ONGLET 2 : DÉPARTEMENT PROMOTION & ANIMATION   */}
       {/* ======================================================== */}
       {activeSubTab === 'promotion' && (
-        <div className="space-y-6">
+        <div ref={promotionPrintRef} className="space-y-6">
 
           {/* Bandeau d'Introduction Stratégique */}
           <div className="p-5 rounded-2xl bg-gradient-to-r from-[#004528] via-[#047857] to-[#022c22] text-white space-y-2 shadow-lg">
@@ -900,7 +902,7 @@ export const RecoveryRateChart: React.FC<RecoveryRateChartProps> = ({
             <div className="flex items-center gap-2">
               <button
                 type="button"
-                onClick={() => window.print()}
+                onClick={() => printElement(promotionPrintRef.current, 'Note_Orientations_Promotion_DDLPN')}
                 className="px-4 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-[#0f172a] font-bold flex items-center gap-1.5 transition-colors"
               >
                 <Printer className="w-4 h-4" />

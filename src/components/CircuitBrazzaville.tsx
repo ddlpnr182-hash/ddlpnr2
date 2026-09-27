@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { RepublicSeal } from './RepublicSeal.tsx';
 import { FieldEstablishment } from '../lib/supabase.ts';
+import { printElement } from '../lib/printUtils.ts';
 
 export interface CircuitBrazzavilleProps {
   establishments: FieldEstablishment[];
@@ -53,6 +54,8 @@ export const CircuitBrazzaville: React.FC<CircuitBrazzavilleProps> = ({
   onTransmitToBrazzaville,
   onClose,
 }) => {
+  const printSlipRef = useRef<HTMLDivElement>(null);
+  const [printingLog, setPrintingLog] = useState<TransmissionLog | null>(null);
   const [transmissions, setTransmissions] = useState<TransmissionLog[]>(initialTransmissions);
   const [selectedBordereauEst, setSelectedBordereauEst] = useState<FieldEstablishment | null>(null);
   const [sendChannel, setSendChannel] = useState<'COURRIER_POSTAL' | 'EMAIL_OFFICIEL' | 'WHATSAPP_DGL'>('COURRIER_POSTAL');
@@ -312,10 +315,18 @@ export const CircuitBrazzaville: React.FC<CircuitBrazzavilleProps> = ({
                   <td className="p-3 text-right space-x-2">
                     <button
                       type="button"
-                      onClick={() => window.print()}
-                      className="px-2.5 py-1 bg-white border border-[#c4c7d4] hover:bg-gray-50 rounded text-xs font-bold text-[#022448] cursor-pointer"
+                      onClick={() => {
+                        setPrintingLog(t);
+                        setTimeout(() => {
+                          if (printSlipRef.current) {
+                            printElement(printSlipRef.current, `Bordereau_${t.transmittalNumber.replace(/[^a-zA-Z0-9]/g, '_')}`);
+                          }
+                        }, 100);
+                      }}
+                      className="px-2.5 py-1 bg-white border border-[#c4c7d4] hover:bg-gray-50 rounded text-xs font-bold text-[#022448] cursor-pointer inline-flex items-center gap-1"
                     >
-                      Imprimer Bordereau
+                      <span className="material-symbols-outlined text-[14px]">print</span>
+                      <span>Imprimer Bordereau</span>
                     </button>
                   </td>
                 </tr>
@@ -459,6 +470,125 @@ export const CircuitBrazzaville: React.FC<CircuitBrazzavilleProps> = ({
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* PRINTABLE BORDEREAU SLIP (Invisible in screen, captured for printing) */}
+      {printingLog && (
+        <div style={{ position: 'absolute', left: '-9999px', top: 0 }}>
+          <div
+            ref={printSlipRef}
+            className="p-8 bg-white text-black font-serif max-w-[210mm] mx-auto space-y-6"
+            style={{ width: '210mm', minHeight: '297mm' }}
+          >
+            {/* Header */}
+            <div className="flex justify-between items-start border-b-2 border-black pb-4 text-xs font-sans">
+              <div className="text-center w-64">
+                <p className="font-bold uppercase tracking-wider text-[11px]">RÉPUBLIQUE DU CONGO</p>
+                <p className="italic text-[10px]">Unité - Travail - Progrès</p>
+                <p className="mt-2 text-[9px] uppercase font-semibold leading-tight">
+                  MINISTÈRE DE LA CULTURE, DES ARTS, DU PATRIMOINE NATIONAL ET DE L'INDUSTRIE TOURISTIQUE
+                </p>
+                <p className="font-bold text-[10px] mt-1">DIRECTION GÉNÉRALE DES LOISIRS</p>
+                <p className="font-bold text-[10px] text-[#022448]">DIRECTION DÉPARTEMENTALE DE POINTE-NOIRE</p>
+              </div>
+              <div className="text-right text-[11px] space-y-1">
+                <p className="font-bold">Pointe-Noire, le {printingLog.dateSent}</p>
+                <p className="font-mono text-xs font-bold text-gray-800">Réf : {printingLog.transmittalNumber}</p>
+                <p className="text-[10px] text-gray-600">N° Suivi : {printingLog.trackingNumber}</p>
+              </div>
+            </div>
+
+            {/* Title */}
+            <div className="text-center py-4 bg-gray-50 border border-gray-300 rounded">
+              <h1 className="font-garamond text-xl font-bold uppercase tracking-wide text-[#022448]">
+                Bordereau d'Envoi et de Transmission Hiérarchique
+              </h1>
+              <p className="text-xs italic text-gray-700 mt-1">
+                À l'attention de Monsieur le Directeur Général des Loisirs — Brazzaville
+              </p>
+            </div>
+
+            {/* Content Table */}
+            <div className="space-y-3 font-sans text-xs">
+              <div className="border border-black rounded overflow-hidden">
+                <table className="w-full text-left">
+                  <thead className="bg-gray-100 border-b border-black text-[10px] uppercase font-bold">
+                    <tr>
+                      <th className="p-2 border-r border-black">Élément</th>
+                      <th className="p-2">Désignation / Détails</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-300">
+                    <tr>
+                      <td className="p-2 font-bold border-r border-black bg-gray-50">Établissement</td>
+                      <td className="p-2 font-bold text-sm">{printingLog.establishmentName}</td>
+                    </tr>
+                    <tr>
+                      <td className="p-2 font-bold border-r border-black bg-gray-50">Promoteur / Gérant</td>
+                      <td className="p-2">{printingLog.promoter}</td>
+                    </tr>
+                    <tr>
+                      <td className="p-2 font-bold border-r border-black bg-gray-50">Objet du Dossier</td>
+                      <td className="p-2">Demande d'Autorisation Définitive d'Exploitation d'une Structure de Loisirs</td>
+                    </tr>
+                    <tr>
+                      <td className="p-2 font-bold border-r border-black bg-gray-50">Canal d'Expédition</td>
+                      <td className="p-2 font-semibold">
+                        {printingLog.channel === 'COURRIER_POSTAL' && 'Courrier Postal Sécurisé / Fret'}
+                        {printingLog.channel === 'EMAIL_OFFICIEL' && 'Messagerie Officielle DGL'}
+                        {printingLog.channel === 'WHATSAPP_DGL' && 'Transmission Numérique Directe DGL'}
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="p-2 font-bold border-r border-black bg-gray-50">Code de Suivi / Récépissé</td>
+                      <td className="p-2 font-mono font-bold">{printingLog.trackingNumber}</td>
+                    </tr>
+                    <tr>
+                      <td className="p-2 font-bold border-r border-black bg-gray-50">Observations DDL-PN</td>
+                      <td className="p-2 italic">{printingLog.decisionNotes || 'Dossier instruit et transmis pour attribution des droits d’exploitation.'}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Package contents */}
+              <div className="border border-gray-300 p-3 rounded bg-gray-50 text-[11px] space-y-1">
+                <p className="font-bold uppercase text-[10px] text-gray-700">Pièces Transmises sous ce Bordereau :</p>
+                <div className="grid grid-cols-2 gap-1 text-[10px]">
+                  <p>• 1x Demande manuscrite timbrée</p>
+                  <p>• 1x Copie CNI / Passeport légalisée</p>
+                  <p>• 1x Extrait de Casier Judiciaire (Bulletin N°3)</p>
+                  <p>• 1x Certificat de Nationalité</p>
+                  <p>• 1x Attestation de Dépôt DDL-PN</p>
+                  <p>• 1x Quitus de Sécurité Incendie / Pompiers</p>
+                </div>
+              </div>
+
+              <p className="text-[11px] leading-relaxed pt-2">
+                Le Directeur Départemental des Loisirs de Pointe-Noire soussigné, certifie que le présent dossier a fait l'objet d'un recensement contradictoire et d'une instruction préalable favorable conformément à la réglementation républicaine en vigueur.
+              </p>
+            </div>
+
+            {/* Signatures */}
+            <div className="pt-8 flex justify-between items-end font-sans text-xs">
+              <div className="text-center">
+                <p className="font-bold">Pour le Secrétariat / Régie</p>
+                <div className="h-16 flex items-center justify-center text-gray-400 italic text-[10px]">
+                  [Cachet d'expédition]
+                </div>
+                <p className="border-t border-gray-400 pt-1 text-[10px]">Mention "Départ" DDL-PN</p>
+              </div>
+              <div className="text-center">
+                <p className="font-bold">Le Directeur Départemental des Loisirs</p>
+                <p className="text-[11px] font-semibold text-[#022448]">Jacques Alphonse MATOKO</p>
+                <div className="h-16 flex items-center justify-center text-gray-400 italic text-[10px]">
+                  [Signature & Sceau Officiel]
+                </div>
+                <p className="border-t border-gray-400 pt-1 text-[10px]">Direction Départementale DDL-PN</p>
+              </div>
+            </div>
           </div>
         </div>
       )}

@@ -1,11 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import type { TabType } from './Navbar.tsx';
+import { printElement } from '../lib/printUtils.ts';
 
 interface SuiviPTAProps {
   onNavigateToTab?: (tab: TabType) => void;
 }
 
 export const SuiviPTA: React.FC<SuiviPTAProps> = ({ onNavigateToTab }) => {
+  const ptaPrintSheetRef = useRef<HTMLDivElement>(null);
   const [isCompiling, setIsCompiling] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
@@ -426,7 +428,7 @@ export const SuiviPTA: React.FC<SuiviPTAProps> = ({ onNavigateToTab }) => {
               </span>
               <button
                 type="button"
-                onClick={() => window.print()}
+                onClick={() => printElement(ptaPrintSheetRef.current, 'Fiche_Synthese_PTA_2026_DDLPN')}
                 className="p-1 rounded hover:bg-[#e8eeff] text-[#022448] transition-colors cursor-pointer"
                 title="Imprimer ou Exporter PDF"
               >
@@ -437,7 +439,8 @@ export const SuiviPTA: React.FC<SuiviPTAProps> = ({ onNavigateToTab }) => {
 
           {/* SIMULATED A4 REPORT SHEET */}
           <div
-            className="bg-white rounded-lg shadow-xl p-6 text-[#161c27] relative overflow-hidden text-left border border-[#dde2f3]"
+            ref={ptaPrintSheetRef}
+            className="printable-document bg-white rounded-lg shadow-xl p-6 text-[#161c27] relative overflow-hidden text-left border border-[#dde2f3]"
             style={{ minHeight: '820px' }}
           >
             {/* Header Tricolor Line */}

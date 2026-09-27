@@ -1,7 +1,8 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef } from 'react';
 import { FieldEstablishment, AgentAccount } from '../lib/supabase.ts';
 import { ArmoiriesCongo, LogoDDLPN } from './RepublicSeal.tsx';
 import { useSession } from '../lib/sessionContext.tsx';
+import { printElement } from '../lib/printUtils.ts';
 
 interface CalendrierRdvTerrainProps {
   establishments: FieldEstablishment[];
@@ -179,6 +180,8 @@ export const CalendrierRdvTerrain: React.FC<CalendrierRdvTerrainProps> = ({
     setShowLoginModal,
     agentsList,
   } = useSession();
+
+  const quittancePrintRef = useRef<HTMLDivElement>(null);
 
   // Current reference date: default to 24 September 2026 (matching system context)
   const [currentDate, setCurrentDate] = useState<Date>(() => {
@@ -2535,7 +2538,7 @@ export const CalendrierRdvTerrain: React.FC<CalendrierRdvTerrainProps> = ({
               <div className="flex items-center gap-2">
                 <button
                   type="button"
-                  onClick={() => window.print()}
+                  onClick={() => printElement(quittancePrintRef.current, `Quittance_${officialReceiptModal?.receiptRef || 'DDLPN'}`)}
                   className="bg-[#006d2f] hover:bg-[#005223] text-white px-3 py-1 rounded-lg text-xs font-bold flex items-center gap-1 cursor-pointer"
                 >
                   <span className="material-symbols-outlined text-sm">print</span>
@@ -2552,7 +2555,7 @@ export const CalendrierRdvTerrain: React.FC<CalendrierRdvTerrainProps> = ({
             </div>
 
             {/* Printable Receipt Body */}
-            <div className="p-6 sm:p-8 space-y-6 bg-white text-[#161c27]">
+            <div ref={quittancePrintRef} className="p-6 sm:p-8 space-y-6 bg-white text-[#161c27]">
               {/* Official Header with Armoiries & Logo DDLPN */}
               <div className="flex items-start justify-between border-b-2 border-[#022448] pb-4">
                 <div className="flex items-center gap-3">
@@ -2708,7 +2711,7 @@ export const CalendrierRdvTerrain: React.FC<CalendrierRdvTerrainProps> = ({
                 </button>
                 <button
                   type="button"
-                  onClick={() => window.print()}
+                  onClick={() => printElement(quittancePrintRef.current, `Quittance_${officialReceiptModal?.receiptRef || 'DDLPN'}`)}
                   className="bg-[#022448] hover:bg-[#001730] text-[#ffe082] text-xs font-bold px-4 py-2 rounded-xl flex items-center gap-1.5 cursor-pointer shadow-xs"
                 >
                   <span className="material-symbols-outlined text-base">print</span>

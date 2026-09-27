@@ -1,488 +1,626 @@
-export type ServiceType =
-  | 'SAF'
-  | 'SAA'
-  | 'STATISTIQUES'
-  | 'PROMOTION';
+/**
+ * @license
+ * Système Intégré DDL-PN — République du Congo (MCAPNIT)
+ * Modèle Officiel Républicain du Rapport Trimestriel d'Activités
+ * Conforme à 100% au document officiel de la Direction Départementale des Loisirs de Pointe-Noire.
+ */
 
-export const SERVICES_CONFIG: Record<
-  ServiceType,
-  { code: ServiceType; label: string; subLabel: string; color: string; defaultChef: string }
-> = {
-  SAF: {
-    code: 'SAF',
-    label: 'Service Administratif et Financier',
-    subLabel: 'SAF',
-    color: '#022448',
-    defaultChef: 'Chef de Service Administratif et Financier',
-  },
-  SAA: {
-    code: 'SAA',
-    label: 'Service Autorisation et Animation',
-    subLabel: 'SAA',
-    color: '#006d2f',
-    defaultChef: 'Jacques Alphonse MATOKO (Chef de Service)',
-  },
-  STATISTIQUES: {
-    code: 'STATISTIQUES',
-    label: 'Service Statistiques',
-    subLabel: 'Service Statistiques & Données',
-    color: '#6d5e00',
-    defaultChef: 'Chef de Service Statistiques',
-  },
-  PROMOTION: {
-    code: 'PROMOTION',
-    label: 'Service Promotion',
-    subLabel: 'Service Promotion des Loisirs & Partenariats',
-    color: '#1e3a5f',
-    defaultChef: 'Chef de Service Promotion',
-  },
-};
-
-export type ObjectifAtteintStatus = 'OUI' | 'NON' | 'PARTIEL' | 'EN_COURS';
-
-export interface ActiviteService {
+export interface TableauBordPtaItem {
   id: string;
-  code: string; // Ex: ACT-SAF-01, ACT-SAA-01...
-  activite: string; // Intitulé précis de l'activité au PTA
-  objectifPta: string; // Objectif prescrit par le PTA
-  indicateurCible: string; // Cible chiffrée
-  realisation: string; // Réalisation concrète du trimestre
-  objectifAtteint: ObjectifAtteintStatus; // OUI | NON | PARTIEL | EN_COURS
-  tauxRealisation: number; // 0 à 100%
-  periode: string; // Ex: Avril-Juin 2026
-  observations: string; // Motifs si non atteint, contraintes, écarts
+  indicateur: string;
+  cibleAnnuelle: string;
+  resultatTrimestre: string;
+  statut: 'ATTEINT' | 'NON_REALISE' | 'BLOQUE' | 'REPORTE' | 'INITIATIVE_NOUVELLE' | 'EN_COURS';
+  statutLabel: string;
 }
 
-export interface ActiviteHorsProgrammation {
+export interface BilanCumuleItem {
   id: string;
-  code: string;
-  titre: string;
-  serviceResponsable: ServiceType;
-  datePeriode: string;
+  activite: string;
+  t1: string;
+  t2: string;
+  t3: string;
+  statutCumule: string;
+  isCompleted?: boolean;
+}
+
+export interface ActiviteRealiseeDetail {
+  id: string;
+  num: string;
+  activitePrevue: string;
+  contenusActions: string[];
+  indicateurs: string[];
+  execution: string;
+  observation: string;
+}
+
+export interface ActiviteNonRealiseeDetail {
+  id: string;
+  num: string;
+  activitePrevue: string;
+  contenusActions: string[];
+  indicateurs: string[];
+  execution: string;
+  observation: string;
+}
+
+export interface ParticipationInstitutionnelle {
+  id: string;
+  date: string;
   lieu: string;
-  contexte: string;
-  resultats: string;
-  observations: string;
+  reference?: string;
+  activiteEvenement: string;
+  roleParticipation: string;
+  cadrePatronage: string;
 }
 
-export interface DifficulteService {
+export interface DifficulteRapport {
   id: string;
-  service: ServiceType | 'DIRECTION_GENERALE';
+  num: number;
   titre: string;
   description: string;
-  impactPta: string; // Impact direct sur l'atteinte des objectifs du PTA
-  solutionProposee: string;
-  attenteHierarchie: string;
 }
 
-export interface EffectifService {
-  serviceKey: ServiceType | 'DIRECTION';
-  serviceNom: string;
-  fonctionnaires: number;
-  contractuels: number;
-  stagiaires: number;
-  total: number;
-  observations: string;
+export interface SuggestionRapport {
+  id: string;
+  numRomain: string;
+  titre: string;
+  description: string;
 }
 
 export interface RapportTrimestrielDirection {
   id: string;
   referenceNumero: string;
+  ministere: string;
+  directionGenerale: string;
+  departement: string;
+  directionDepartementale: string;
+  serviceEmetteur: string;
+  republique: string;
+  devise: string;
+  titre: string;
+  sousTitre: string;
   trimestre: '1er Trimestre' | '2ème Trimestre' | '3ème Trimestre' | '4ème Trimestre';
   annee: number;
   periodeMois: string;
   dateSignature: string;
   lieuSignature: string;
-  destinataires: {
-    directeurGeneral: string;
-    prefet: string;
-  };
-  signataires: {
-    rapporteurNom: string;
-    rapporteurTitre: string;
-    directeurNom: string;
-    directeurTitre: string;
-  };
+
+  // 1. Introduction
   introduction: string;
-  contexteDepartemental: string;
-  effectifs: EffectifService[];
-  effectifsSynthese: string;
 
-  // LES QUATRE TABLEAUX OFFICIELS DES QUATRE SERVICES
-  tableauxServices: {
-    SAF: ActiviteService[];
-    SAA: ActiviteService[];
-    STATISTIQUES: ActiviteService[];
-    PROMOTION: ActiviteService[];
-  };
+  // 2. Synthèse Tableau de bord PTA
+  tableauBordPta: TableauBordPtaItem[];
+  faitMarquantTitre: string;
+  faitMarquantTexte: string;
 
-  activitesHorsProgrammation: ActiviteHorsProgrammation[];
-  difficultes: DifficulteService[];
-  perspectives: string[];
-  recommandationsDGL: string[];
-  recommandationsPrefet: string[];
+  // 3. Bilan Cumulé
+  bilanCumule: BilanCumuleItem[];
+  analyseBilanCumuleTitre: string;
+  analyseBilanCumuleTexte: string;
+
+  // 4. Activités programmées réalisées
+  activitesRealiseesSAFM: ActiviteRealiseeDetail[];
+  activitesRealiseesAutorisation: ActiviteRealiseeDetail[];
+  activitesRealiseesNumérique: ActiviteRealiseeDetail[];
+  valeurStrategiqueNumerique: string;
+
+  // 5. Activités programmées non réalisées
+  activitesNonRealisees: ActiviteNonRealiseeDetail[];
+
+  // 6. Participations institutionnelles
+  participationsInstitutionnelles: ParticipationInstitutionnelle[];
+  noteOpportuniteWingWah: string;
+
+  // 7. Difficultés rencontrées
+  difficultes: DifficulteRapport[];
+
+  // 8. Suggestions
+  suggestions: SuggestionRapport[];
+
+  // 9. Conclusion & Signature
   conclusion: string;
+  directeurNom: string;
+  directeurTitre: string;
+  distributionList: string[];
 }
 
-// PROTOTYPE OFFICIEL RÉALISTE AVEC LES 4 SERVICES REQUIS PAR LA DIRECTION GÉNÉRALE
 export const RAPPORT_OFFICIEL_PROTOTYPE: RapportTrimestrielDirection = {
-  id: 'rapport-t2-2026-dgl-conforme',
-  referenceNumero: 'N° 018/MCAPNIT/DGL/DDL-PN/2026',
-  trimestre: '2ème Trimestre',
+  id: 'rapport-t3-2026-ddl-pn-officiel',
+  referenceNumero: 'N°_____/MCAPNIT/DGL/DDL-PN/SAFM',
+  ministere: "MINISTÈRE DE LA CULTURE, DES ARTS, DU PATRIMOINE NATIONAL ET DE L'INDUSTRIE TOURISTIQUE",
+  directionGenerale: 'DIRECTION GÉNÉRALE DES LOISIRS',
+  departement: 'DÉPARTEMENT DE POINTE-NOIRE',
+  directionDepartementale: 'DIRECTION DÉPARTEMENTALE DES LOISIRS DE POINTE-NOIRE',
+  serviceEmetteur: 'SERVICE ADMINISTRATIF, FINANCIER ET MATÉRIEL',
+  republique: 'REPUBLIQUE DU CONGO',
+  devise: 'Unité – Travail – Progrès',
+  titre: "RAPPORT D'ACTIVITÉS DU TROISIÈME TRIMESTRE 2026",
+  sousTitre: 'Direction Départementale des Loisirs de Pointe-Noire',
+  trimestre: '3ème Trimestre',
   annee: 2026,
-  periodeMois: 'Avril - Mai - Juin 2026',
-  dateSignature: 'Le 08 Juillet 2026',
+  periodeMois: 'Juillet – Septembre 2026',
+  dateSignature: '2026',
   lieuSignature: 'Pointe-Noire',
-  destinataires: {
-    directeurGeneral: 'À Monsieur le Directeur Général des Loisirs (Brazzaville)',
-    prefet: 'À Monsieur le Préfet du Département de Pointe-Noire (Cabinet du Préfet)',
-  },
-  signataires: {
-    rapporteurNom: 'Jacques Alphonse MATOKO',
-    rapporteurTitre: 'Chef de Service Autorisation et Animation (SAA)',
-    directeurNom: 'Jean Richard NTSEKE NGOUAKA',
-    directeurTitre: 'Directeur Départemental des Loisirs de Pointe-Noire',
-  },
+
   introduction:
-    "Le présent rapport trimestriel d'activités pour le deuxième trimestre 2026 est élaboré conformément au canevas officiel transmis par la Direction Générale des Loisirs. Il présente de manière exhaustive l'état d'exécution du Plan de Travail Annuel (PTA 2026) au sein de la Direction Départementale des Loisirs de Pointe-Noire, à travers les quatre services opérationnels : le Service Administratif et Financier (SAF), le Service Autorisation et Animation (SAA), le Service Statistiques et le Service Promotion. Il rend compte de l'atteinte ou non des objectifs fixés et soumet à la hiérarchie les contraintes majeures rencontrées.",
-  contexteDepartemental:
-    "Dans le département de Pointe-Noire, pôle économique et balnéaire majeur, l'encadrement des structures de divertissement, le contrôle des autorisations d'exploiter et la promotion des loisirs sains constituent des impératifs républicains. Les quatre services se sont mobilisés malgré des moyens logistiques très restreints.",
-  effectifs: [
+    "Le présent rapport dresse le bilan des activités du troisième trimestre de l'exercice 2026 de la Direction Départementale des Loisirs (DDL) de Pointe-Noire. Il constitue le troisième rapport trimestriel d'exécution du Plan de Travail Annuel (PTA) 2026, conformément aux mécanismes de suivi-évaluation et de reporting prévus au Tableau 7 dudit plan.\n\nCe trimestre (juillet – septembre 2026) s'inscrit dans un contexte de continuité des contraintes structurelles déjà documentées aux trimestres précédents, qui ont une nouvelle fois limité l'exécution des activités d'animation, de contrôle et de partenariat. Cependant, le troisième trimestre est marqué par une initiative nouvelle et significative : le lancement de la présence numérique officielle de la DDL-PN à travers la création de sa page Facebook institutionnelle, accompagnée de la rédaction de son Terme de Référence (TDR) et de la mise en traitement de son plan de communication.\n\nPar ailleurs, la DDL a honoré sa représentation institutionnelle lors de trois cérémonies officielles de haut niveau au mois de septembre 2026, dont une placée sous le Haut Patronage de Monsieur le Premier Ministre, Chef du Gouvernement.\n\nLe présent rapport rend compte de l'ensemble de ces éléments et formule des propositions concrètes pour le quatrième et dernier trimestre de l'exercice 2026, qui devra impérativement constituer un trimestre de rattrapage opérationnel et de consolidation des acquis.",
+
+  tableauBordPta: [
     {
-      serviceKey: 'DIRECTION',
-      serviceNom: 'Direction & Secrétariat',
-      fonctionnaires: 2,
-      contractuels: 1,
-      stagiaires: 1,
-      total: 4,
-      observations: 'Coordination, expédition du courrier et relations tutélaires',
+      id: 'pta-1',
+      indicateur: 'Gestion administrative courante (SAFM)',
+      cibleAnnuelle: '4 trimestres',
+      resultatTrimestre: 'Assuré',
+      statut: 'ATTEINT',
+      statutLabel: '✅ ATTEINT',
     },
     {
-      serviceKey: 'SAF',
-      serviceNom: 'Service Administratif et Financier (SAF)',
-      fonctionnaires: 3,
-      contractuels: 1,
-      stagiaires: 1,
-      total: 5,
-      observations: 'Gestion du personnel, budget, matériel et régie financière',
+      id: 'pta-2',
+      indicateur: 'Missions de contrôle qualité établissements',
+      cibleAnnuelle: '2 missions / trimestre',
+      resultatTrimestre: '0 mission réalisée',
+      statut: 'NON_REALISE',
+      statutLabel: '⚠ NON RÉALISÉ',
     },
     {
-      serviceKey: 'SAA',
-      serviceNom: 'Service Autorisation et Animation (SAA)',
-      fonctionnaires: 5,
-      contractuels: 2,
-      stagiaires: 2,
-      total: 9,
-      observations: 'Instruction des agréments, inspections de conformité et encadrement',
+      id: 'pta-3',
+      indicateur: "Autorisations d'exploitation délivrées",
+      cibleAnnuelle: 'En continu',
+      resultatTrimestre: '0 dossier complet déposé',
+      statut: 'BLOQUE',
+      statutLabel: '⚠ BLOQUÉ',
     },
     {
-      serviceKey: 'STATISTIQUES',
-      serviceNom: 'Service Statistiques',
-      fonctionnaires: 2,
-      contractuels: 1,
-      stagiaires: 1,
-      total: 4,
-      observations: 'Recensement, cartographie, base de données et fiches d’enquête',
+      id: 'pta-4',
+      indicateur: 'Enquête statistique — Phase 2 (T2-T3)',
+      cibleAnnuelle: '10 000 répondants cumulés',
+      resultatTrimestre: 'Phase 2 en attente accompagnement',
+      statut: 'REPORTE',
+      statutLabel: '⚠ REPORTÉ',
     },
     {
-      serviceKey: 'PROMOTION',
-      serviceNom: 'Service Promotion',
-      fonctionnaires: 2,
-      contractuels: 1,
-      stagiaires: 0,
-      total: 3,
-      observations: 'Points focaux en entreprises, partenariats et vulgarisation',
+      id: 'pta-5',
+      indicateur: 'Conventions de partenariat signées',
+      cibleAnnuelle: '3 conventions min.',
+      resultatTrimestre: '0 — partenaires hésitants',
+      statut: 'REPORTE',
+      statutLabel: '⚠ REPORTÉ',
+    },
+    {
+      id: 'pta-6',
+      indicateur: 'Activités de loisirs sains scolaires',
+      cibleAnnuelle: 'Lancement T1',
+      resultatTrimestre: 'Non démarrées',
+      statut: 'REPORTE',
+      statutLabel: '⚠ REPORTÉ',
+    },
+    {
+      id: 'pta-7',
+      indicateur: 'Présence numérique DDL-PN (page officielle)',
+      cibleAnnuelle: 'Non prévu au PTA initial',
+      resultatTrimestre: 'Page Facebook créée',
+      statut: 'INITIATIVE_NOUVELLE',
+      statutLabel: '✅ INITIATIVE NOUVELLE',
+    },
+    {
+      id: 'pta-8',
+      indicateur: 'Plan de communication DDL-PN',
+      cibleAnnuelle: 'Non prévu au PTA initial',
+      resultatTrimestre: 'TDR en rédaction',
+      statut: 'EN_COURS',
+      statutLabel: '✅ EN COURS',
+    },
+    {
+      id: 'pta-9',
+      indicateur: 'Participations aux cérémonies officielles',
+      cibleAnnuelle: 'Continue',
+      resultatTrimestre: '3 cérémonies — sept. 2026',
+      statut: 'ATTEINT',
+      statutLabel: '✅ ATTEINT',
+    },
+    {
+      id: 'pta-10',
+      indicateur: 'Rapport trimestriel T3 produit et transmis',
+      cibleAnnuelle: '4 rapports / an',
+      resultatTrimestre: 'Présent rapport',
+      statut: 'EN_COURS',
+      statutLabel: '✅ EN COURS',
     },
   ],
-  effectifsSynthese:
-    'Effectif total consolidé : 25 agents (14 fonctionnaires de l’État, 6 contractuels et 5 stagiaires opérationnels) répartis entre la Direction et les 4 services techniques.',
 
-  // LES QUATRE TABLEAUX OFFICIELS EXACTS
-  tableauxServices: {
-    // 1. TABLEAU SERVICE ADMINISTRATIF ET FINANCIER (SAF)
-    SAF: [
-      {
-        id: 'act-saf-1',
-        code: 'SAF-01',
-        activite: 'Gestion administrative, tenue des registres et suivi de la carrière des agents',
-        objectifPta: 'Assurer la présence effective et le traitement des actes administratifs',
-        indicateurCible: '100% des dossiers et courriers traités à bonne date',
-        realisation: 'Traitement régulier des courriers arrivées/départs et états d’assiduité',
-        objectifAtteint: 'OUI',
-        tauxRealisation: 100,
-        periode: 'Avril - Juin 2026',
-        observations: 'Tenue satisfaisante du courrier malgré la pénurie de papier et fournitures.',
-      },
-      {
-        id: 'act-saf-2',
-        code: 'SAF-02',
-        activite: 'Suivi de l’exécution du budget de fonctionnement et comptabilité matière',
-        objectifPta: 'Ordonnancement des dépenses prioritaires et inventaire du patrimoine',
-        indicateurCible: '2 inventaires trimestriels et clôture comptable régulière',
-        realisation: '1 inventaire physique réalisé ; clôture comptable T2 effectuée',
-        objectifAtteint: 'PARTIEL',
-        tauxRealisation: 65,
-        periode: 'Mai - Juin 2026',
-        observations:
-          'Objectif partiellement atteint en raison du non-décaissement des crédits de fonctionnement.',
-      },
-      {
-        id: 'act-saf-3',
-        code: 'SAF-03',
-        activite: 'Perception et reversement des redevances d’agrément au Trésor Public',
-        objectifPta: 'Sécuriser le recouvrement des droits régaliels selon la clé 50%-50%',
-        indicateurCible: '15 000 000 FCFA prévisionnels à recouvrer',
-        realisation: '12 450 000 FCFA recouvrés avec quittances officielles',
-        objectifAtteint: 'OUI',
-        tauxRealisation: 83,
-        periode: 'Permanent',
-        observations:
-          'Objectif atteint à 83%. Reversement rigoureux au Trésor Public et à l’Administration.',
-      },
-      {
-        id: 'act-saf-4',
-        code: 'SAF-04',
-        activite: 'Approvisionnement et dotation des services en consommables et matériel',
-        objectifPta: 'Dotation mensuelle en fournitures et carburant pour les 4 services',
-        indicateurCible: '3 dotations mensuelles régulières pour le T2',
-        realisation: '1 seule dotation partielle effectuée',
-        objectifAtteint: 'NON',
-        tauxRealisation: 33,
-        periode: 'Avril - Juin 2026',
-        observations:
-          'Objectif non atteint : absence de trésorerie locale, rupture de papier et de carburant.',
-      },
-    ],
+  faitMarquantTitre: 'FAIT MARQUANT DU T3 2026 — INITIATIVE NUMÉRIQUE DDL-PN',
+  faitMarquantTexte:
+    "La création de la page Facebook officielle de la Direction Départementale des Loisirs de Pointe-Noire constitue l'initiative la plus significative du T3 2026. Bien que non inscrite au PTA initial, cette action s'inscrit pleinement dans l'Axe 4 du PTA 2026 — Gouvernance, information et communication institutionnelle. Elle répond directement à l'une des recommandations de l'enquête statistique T1 qui avait identifié le manque d'information (6ème frein) comme un obstacle adressable à faible coût. La DDL entre désormais dans l'ère de la communication publique numérique.",
 
-    // 2. TABLEAU SERVICE AUTORISATION ET ANIMATION (SAA)
-    SAA: [
-      {
-        id: 'act-saa-1',
-        code: 'SAA-01',
-        activite: 'Instruction technique des dossiers de demande d’autorisation et d’agrément',
-        objectifPta: 'Instruire tous les dossiers des promoteurs d’espaces de loisirs marchands',
-        indicateurCible: '30 dossiers à instruire et soumettre au Directeur',
-        realisation: '24 dossiers instruits avec procès-verbaux de commodo/incommodo',
-        objectifAtteint: 'OUI',
-        tauxRealisation: 80,
-        periode: 'Avril - Juin 2026',
-        observations: 'Dossiers restants en attente de régularisation des quittances de paiement.',
-      },
-      {
-        id: 'act-saa-2',
-        code: 'SAA-02',
-        activite: 'Contrôles inopinés de sécurité, conformité et nuisances sonores',
-        objectifPta: 'Inspecter les établissements nocturnes et terrasses de Pointe-Noire',
-        indicateurCible: '60 contrôles inopinés ciblés dans les 6 arrondissements',
-        realisation: '42 contrôles inopinés exécutés sur le terrain',
-        objectifAtteint: 'PARTIEL',
-        tauxRealisation: 70,
-        periode: 'Tout le trimestre',
-        observations:
-          'Objectif partiellement atteint : impossibilité de couvrir la nuit les arrondissements périphériques (Mongo-Poukou, Ngoyo) sans véhicule.',
-      },
-      {
-        id: 'act-saa-3',
-        code: 'SAA-03',
-        activite: 'Organisation d’activités de loisirs sains et socio-éducatifs pour les jeunes',
-        objectifPta: 'Créer des cadres de divertissement pour les élèves et la jeunesse',
-        indicateurCible: '4 événements récréatifs programmés au PTA',
-        realisation: '3 événements organisés avec succès (Mpita, Tié-Tié, Lumumba)',
-        objectifAtteint: 'OUI',
-        tauxRealisation: 75,
-        periode: 'Mai - Juin 2026',
-        observations:
-          'Tournoi de jeux traditionnels et kermesses populaires très appréciés par les familles.',
-      },
-      {
-        id: 'act-saa-4',
-        code: 'SAA-04',
-        activite: 'Concertations obligatoires avec les collectifs de tenanciers et usagers',
-        objectifPta: 'Sensibiliser les usagers sur la réglementation et les horaires légaux',
-        indicateurCible: '6 rencontres (1 par arrondissement communal)',
-        realisation: '4 rencontres départementales organisées',
-        objectifAtteint: 'PARTIEL',
-        tauxRealisation: 66.7,
-        periode: 'Avril - Mai 2026',
-        observations:
-          'Rencontres menées à Lumumba, Mvoumvou, Tié-Tié et Loandjili. Report pour Tchiamba-Nzassi faute de moyen de transport.',
-      },
-    ],
-
-    // 3. TABLEAU SERVICE STATISTIQUES
-    STATISTIQUES: [
-      {
-        id: 'act-stat-1',
-        code: 'STAT-01',
-        activite: 'Recensement exhaustif et actualisation de la base de données des établissements',
-        objectifPta: 'Dénombrer les structures de loisirs marchandes et non marchandes',
-        indicateurCible: '150 établissements recensés avec fiches techniques individuelles',
-        realisation: '118 fiches statistiques complétées et enregistrées',
-        objectifAtteint: 'OUI',
-        tauxRealisation: 78.7,
-        periode: 'Avril - Juin 2026',
-        observations:
-          'Données collectées manuellement sur papier. Retard dans la saisie informatique faute de terminaux mobiles.',
-      },
-      {
-        id: 'act-stat-2',
-        code: 'STAT-02',
-        activite: 'Cartographie spatiale des espaces de loisirs par arrondissement',
-        objectifPta: 'Établir la géolocalisation et la densité des débits de boisson et terrasses',
-        indicateurCible: 'Cartographie des 6 arrondissements de Pointe-Noire',
-        realisation: 'Arrondissements 1 (Lumumba) et 2 (Mvoumvou) cartographiés',
-        objectifAtteint: 'PARTIEL',
-        tauxRealisation: 50,
-        periode: 'Mai - Juin 2026',
-        observations:
-          'Difficultés pour géolocaliser les zones périurbaines en raison de l’absence de GPS et de moyens roulants.',
-      },
-      {
-        id: 'act-stat-3',
-        code: 'STAT-03',
-        activite: 'Élaboration du bulletin trimestriel des statistiques départementales des loisirs',
-        objectifPta: 'Produire le tableau de bord statistique consolidé pour la DGL',
-        indicateurCible: '1 bulletin trimestriel validé à transmettre à la tutelle',
-        realisation: 'Bulletin T2 rédigé et intégré au présent rapport',
-        objectifAtteint: 'OUI',
-        tauxRealisation: 100,
-        periode: 'Fin Juin 2026',
-        observations: 'Document finalisé et visé par le Chef de Service Statistiques.',
-      },
-    ],
-
-    // 4. TABLEAU SERVICE PROMOTION
-    PROMOTION: [
-      {
-        id: 'act-prom-1',
-        code: 'PROM-01',
-        activite: 'Installation et animation des points focaux de loisirs dans les entreprises',
-        objectifPta: 'Implanter des clubs de détente et de bien-être en milieu professionnel',
-        indicateurCible: '8 entreprises ciblées dans le secteur formel ponténégrin',
-        realisation: '5 points focaux officiellement installés (Secteur portuaire et logistique)',
-        objectifAtteint: 'PARTIEL',
-        tauxRealisation: 62.5,
-        periode: 'Avril - Mai 2026',
-        observations:
-          'Excellente réception dans les sociétés de transit. Négociations en cours avec les banques et compagnies pétrolières.',
-      },
-      {
-        id: 'act-prom-2',
-        code: 'PROM-02',
-        activite: 'Sensibilisation et vulgarisation des loisirs éducatifs et traditionnels',
-        objectifPta: 'Faire la promotion des jeux de l’esprit et du patrimoine récréatif congolais',
-        indicateurCible: '3 campagnes d’information grand public',
-        realisation: '2 campagnes tenues (initiation au Scrabble, promotion du Nzango)',
-        objectifAtteint: 'PARTIEL',
-        tauxRealisation: 66.7,
-        periode: 'Mai - Juin 2026',
-        observations:
-          'Partenariat noué avec les ligues départementales sportives et récréatives.',
-      },
-      {
-        id: 'act-prom-3',
-        code: 'PROM-03',
-        activite: 'Développement de partenariats institutionnels et privés pour l’aménagement d’aires',
-        objectifPta: 'Signer des conventions pour créer des aires de loisirs gratuites',
-        indicateurCible: '2 conventions de partenariat signées',
-        realisation: '1 protocole d’accord préliminaire rédigé avec la Mairie',
-        objectifAtteint: 'EN_COURS',
-        tauxRealisation: 50,
-        periode: 'Tout le trimestre',
-        observations: 'Projet en cours de validation juridique à la Mairie centrale de Pointe-Noire.',
-      },
-    ],
-  },
-
-  activitesHorsProgrammation: [
+  bilanCumule: [
     {
-      id: 'adhoc-01',
-      code: 'ADH-01',
-      titre: 'Encadrement récréatif de la Journée Internationale du Travail (1er Mai)',
-      serviceResponsable: 'SAA',
-      datePeriode: '1er Mai 2026',
-      lieu: 'Place de la République & Plage Côte Sauvage',
-      contexte: 'Sollicitation officielle par le Cabinet du Préfet de Pointe-Noire',
-      resultats: 'Encadrement de 1 200 participants dans des épreuves ludiques et sportives populaires',
-      observations: 'Remerciements formels de l’autorité préfectorale.',
+      id: 'bc-1',
+      activite: 'Gestion administrative SAFM',
+      t1: '✅ Exécuté',
+      t2: '✅ Exécuté',
+      t3: '✅ Exécuté',
+      statutCumule: '✅ Continu — 3/3',
+      isCompleted: true,
     },
     {
-      id: 'adhoc-02',
-      code: 'ADH-02',
-      titre: 'Séance exceptionnelle d’initiation au Scrabble de compétition pour les scolaires',
-      serviceResponsable: 'PROMOTION',
-      datePeriode: '14 Juin 2026',
-      lieu: 'Centre Culturel Jean-Baptiste Tati Loutard',
-      contexte: 'Demande des associations de parents d’élèves pour occuper les vacances',
-      resultats: '85 élèves formés aux règles officielles du Scrabble francophone',
-      observations: 'Création d’un club scolaire de loisirs de l’esprit.',
+      id: 'bc-2',
+      activite: 'Missions inventaire / contrôle établissements',
+      t1: '✅ 1 mission',
+      t2: '—',
+      t3: '0 mission',
+      statutCumule: '⚠ 1 mission sur 6 prévues',
+    },
+    {
+      id: 'bc-3',
+      activite: 'Autorisations délivrées',
+      t1: 'En cours',
+      t2: '—',
+      t3: '0 (blocage docs)',
+      statutCumule: '⚠ Blocage persistant',
+    },
+    {
+      id: 'bc-4',
+      activite: 'Vulgarisation textes réglementaires',
+      t1: '✅ Quotidienne',
+      t2: '✅ Quotidienne',
+      t3: '✅ Quotidienne',
+      statutCumule: '✅ Continu — 3/3',
+      isCompleted: true,
+    },
+    {
+      id: 'bc-5',
+      activite: 'Enquête statistique (Phase 1 réalisée)',
+      t1: '✅ 512 répondants',
+      t2: '—',
+      t3: 'Phase 2 en attente',
+      statutCumule: '⚠ Phase 2 non encore réalisée',
+    },
+    {
+      id: 'bc-6',
+      activite: 'Conventions de partenariat signées',
+      t1: '0',
+      t2: '0',
+      t3: '0',
+      statutCumule: '⚠ 0/3 — Partenaires hésitants',
+    },
+    {
+      id: 'bc-7',
+      activite: 'Activités de loisirs sains scolaires',
+      t1: '0',
+      t2: '0',
+      t3: '0',
+      statutCumule: '⚠ Non démarrées',
+    },
+    {
+      id: 'bc-8',
+      activite: 'Présence numérique (page Facebook DDL-PN)',
+      t1: '—',
+      t2: '—',
+      t3: '✅ Créée',
+      statutCumule: '✅ INITIATIVE NOUVELLE T3',
+      isCompleted: true,
+    },
+    {
+      id: 'bc-9',
+      activite: 'Plan de communication DDL-PN',
+      t1: '—',
+      t2: '—',
+      t3: '✅ TDR en cours',
+      statutCumule: '✅ EN COURS',
+      isCompleted: true,
+    },
+    {
+      id: 'bc-10',
+      activite: 'Cérémonies officielles',
+      t1: '8 cérémonies',
+      t2: '—',
+      t3: '3 cérémonies',
+      statutCumule: '✅ Représentation assurée',
+      isCompleted: true,
     },
   ],
+
+  analyseBilanCumuleTitre: "ANALYSE DU BILAN CUMULÉ — CE QUE DIT L'ÉTAT D'AVANCEMENT À 9 MOIS",
+  analyseBilanCumuleTexte:
+    "Les activités relevant de la gestion administrative courante et de la représentation institutionnelle sont assurées avec constance depuis le début de l'exercice. En revanche, les activités à fort impact direct sur les populations — contrôle des établissements, délivrance d'autorisations, activités de promotion des loisirs sains — restent en suspens. Le T4 2026 devra être le trimestre du rattrapage opérationnel et de la concrétisation des partenariats.",
+
+  activitesRealiseesSAFM: [
+    {
+      id: 'safm-1',
+      num: '01',
+      activitePrevue: 'Gestion Administrative et Courrier',
+      contenusActions: [
+        'Traitement de la correspondance entrante et sortante.',
+        'Archivage et classement des documents du trimestre.',
+        'Suivi des actes administratifs.',
+        'Coordination interne entre les services.',
+      ],
+      indicateurs: ['Registre de courrier à jour.', 'Archives classées.', 'Dossiers constitués.'],
+      execution: 'Exécuté',
+      observation:
+        "Activités routinières assurées sans interruption sur l'ensemble du trimestre. Troisième trimestre consécutif de continuité administrative.",
+    },
+    {
+      id: 'safm-2',
+      num: '02',
+      activitePrevue: 'Gestion des Ressources Humaines',
+      contenusActions: [
+        'Tenue du registre de présence.',
+        'Suivi des congés et absences.',
+        'Gestion des mouvements du personnel.',
+        'Coordination pour les participations aux cérémonies officielles.',
+      ],
+      indicateurs: [
+        'Registre de présence à jour.',
+        'Personnel coordonné pour 3 cérémonies officielles en septembre.',
+      ],
+      execution: 'Exécuté',
+      observation:
+        'Coordination et représentation institutionnelle assurées pour les 3 cérémonies du mois de septembre 2026.',
+    },
+  ],
+
+  activitesRealiseesAutorisation: [
+    {
+      id: 'auto-1',
+      num: '01',
+      activitePrevue: 'Vulgarisation continue des textes réglementaires (Notes N°151 et 152)',
+      contenusActions: [
+        "Information et accompagnement quotidien des usagers à l'accueil.",
+        "Explication des conditions d'obtention des autorisations d'exploitation.",
+        'Orientation des tenanciers dans la constitution de leurs dossiers.',
+        'Écoute et enregistrement des difficultés signalées par les usagers.',
+      ],
+      indicateurs: [
+        'Usagers informés et accompagnés lors de chaque passage.',
+        'Retours des usagers sur les blocages documentés.',
+      ],
+      execution: 'Exécuté',
+      observation:
+        "Information réglementaire délivrée quotidiennement. Note : les tenanciers signalent unanimement que le coût des pièces exigées impacte leur chiffre d'affaires, ce qui les empêche de constituer des dossiers complets. Ce constat alimente la proposition de simplification à soumettre au T4.",
+    },
+  ],
+
+  activitesRealiseesNumérique: [
+    {
+      id: 'num-1',
+      num: '01',
+      activitePrevue: 'Création de la page Facebook officielle de la DDL-PN',
+      contenusActions: [
+        'Ouverture et paramétrage de la page Facebook institutionnelle de la Direction Départementale des Loisirs de Pointe-Noire.',
+        "Définition de l'identité visuelle de la page.",
+        'Publication des premiers contenus institutionnels.',
+      ],
+      indicateurs: [
+        'Page Facebook DDL-PN créée et opérationnelle.',
+        'Première présence numérique officielle de la DDL-PN.',
+      ],
+      execution: 'Exécuté — Initiative T3',
+      observation:
+        "Initiative conduite hors PTA initial mais alignée avec l'Axe 4 (Communication) et les recommandations de l'enquête statistique T1. Constitue un acquis durable et un outil de rayonnement institutionnel à faible coût. Cible : augmenter la visibilité de la DDL auprès des opérateurs, partenaires et grand public.",
+    },
+    {
+      id: 'num-2',
+      num: '02',
+      activitePrevue: 'Rédaction du Terme de Référence (TDR) de la page Facebook DDL-PN',
+      contenusActions: [
+        'Conception du cadre de gouvernance éditoriale.',
+        'Définition des objectifs, des publics cibles et de la ligne éditoriale.',
+        'Planification du calendrier éditorial.',
+        'Identification des responsabilités de publication et de modération.',
+      ],
+      indicateurs: ['TDR en cours de rédaction.', 'Cadre éditorial en cours de finalisation.'],
+      execution: 'En cours',
+      observation:
+        'Document structurant pour la gestion durable et professionnelle de la présence numérique de la DDL. À finaliser et valider au T4 2026.',
+    },
+    {
+      id: 'num-3',
+      num: '03',
+      activitePrevue: 'Élaboration du Plan de Communication DDL-PN',
+      contenusActions: [
+        'Analyse du contexte communicationnel de la DDL.',
+        'Identification des axes de communication prioritaires.',
+        'Définition des outils et canaux de diffusion.',
+        'Calendrier prévisionnel de déploiement.',
+      ],
+      indicateurs: [
+        'Plan de communication en cours de traitement.',
+        'Document stratégique en voie de finalisation.',
+      ],
+      execution: 'En cours',
+      observation:
+        "Le plan de communication est un document stratégique qui orientera l'ensemble des actions de communication de la DDL pour 2026-2027. Sa finalisation au T4 permettra une mise en œuvre dès le début de l'exercice 2027.",
+    },
+  ],
+
+  valeurStrategiqueNumerique:
+    "La présence numérique officielle de la DDL-PN crée une opportunité à trois niveaux.\nInstitutionnel : renforcer la crédibilité de la DDL auprès des partenaires potentiels (Globaline, Institut Français, Wing Wah) qui peuvent désormais constater l'existence et l'activité de la Direction en ligne. Opérationnel : informer les tenanciers des établissements de loisirs sur les procédures d'autorisation, réduisant ainsi le nombre de dossiers incomplets. Politique : rendre visible l'action de la DDL auprès du grand public et des autorités de tutelle, renforçant le plaidoyer pour les moyens nécessaires à l'accomplissement des missions.",
+
+  activitesNonRealisees: [
+    {
+      id: 'anr-1',
+      num: '01',
+      activitePrevue: 'Missions de contrôle qualité des établissements de loisirs',
+      contenusActions: [
+        'Vérification de la conformité réglementaire des établissements.',
+        'PV de mise en demeure des établissements non conformes.',
+        'Rapport de mission.',
+      ],
+      indicateurs: ['2 missions prévues au PTA pour le T3.', 'PV de mise en demeure.'],
+      execution: 'Non réalisé',
+      observation:
+        "Aucune mission de contrôle sur le terrain. Les contraintes opérationnelles n'ont pas permis la conduite de missions autonomes non prescrites par ordre de service préfectoral. Reporté au T4 2026.",
+    },
+    {
+      id: 'anr-2',
+      num: '02',
+      activitePrevue: "Délivrance d'autorisations d'exploitation",
+      contenusActions: [
+        "Réception et instruction des dossiers de demande d'autorisation.",
+        "Délivrance d'autorisations aux établissements conformes.",
+        'Archivage et suivi.',
+      ],
+      indicateurs: ["Nombre d'autorisations délivrées.", 'Taux de régularisation des établissements.'],
+      execution: 'Non réalisé',
+      observation:
+        "Aucun dossier complet déposé au T3. Les tenanciers se plaignent unanimement du coût élevé des pièces exigées, qui impacte leur chiffre d'affaires au point de les empêcher de régulariser leur situation. Ce constat renforce l'urgence de la note de proposition de simplification des procédures — à transmettre impérativement au T4.",
+    },
+    {
+      id: 'anr-3',
+      num: '03',
+      activitePrevue: 'Enquête statistique — Phase 2 (T2-T3)',
+      contenusActions: [
+        'Déploiement des agents dans les 7 zones.',
+        'Collecte de questionnaires (cible T2-T3 : ~4 500 répondants).',
+        'Traitement et analyse des données.',
+      ],
+      indicateurs: ['Cible annuelle : 10 000 répondants.', 'Phase 1 réalisée : 512 (5,12 %).', 'Phase 2 : en attente.'],
+      execution: 'Non réalisé',
+      observation:
+        "La Phase 2 n'a pas pu être conduite. La DDL attend l'accompagnement (logistique et financier) nécessaire à la réalisation des Phases 2 et 3. La demande formelle a été documentée dans le rapport T1. La cible annuelle de 10 000 répondants est désormais à risque si la Phase 3 ne peut absorber le reliquat.",
+    },
+    {
+      id: 'anr-4',
+      num: '04',
+      activitePrevue: 'Formalisation des conventions de partenariat (Globaline, Institut Français, Wing Wah)',
+      contenusActions: [
+        'Négociation et signature des conventions.',
+        'Cérémonie de lancement des partenariats.',
+        'Démarrage des activités co-portées.',
+      ],
+      indicateurs: ['3 conventions signées minimum.', '1 cérémonie de lancement.'],
+      execution: 'Non réalisé',
+      observation:
+        "Les trois partenaires stratégiques identifiés n'ont pas encore formalisé leur engagement. Leur hésitation persiste malgré les relances. À noter : le PDG de la Société Wing Wah était présent à la cérémonie d'inauguration de la Station-Service SCI le 19/09/2026 (cérémonie à laquelle la DDL a participé). Cette présence simultanée constitue une opportunité de prise de contact à exploiter au T4. Le Club Hippique de Pointe-Noire demeure silencieux.",
+    },
+    {
+      id: 'anr-5',
+      num: '05',
+      activitePrevue: 'Activités de promotion des loisirs sains (scolaires, seniors, inclusives)',
+      contenusActions: [
+        'Concours de scrabble en milieu scolaire.',
+        'Randonnées seniors.',
+        'Programme scrabble pour orphelins.',
+      ],
+      indicateurs: ['10 écoles engagées.', '2 randonnées réalisées.', '30 orphelins bénéficiaires.'],
+      execution: 'Non réalisé',
+      observation:
+        "Aucune activité de promotion des loisirs sains n'a pu être organisée au T3. L'absence de ressources budgétaires dédiées et de partenariats formalisés bloque l'ensemble de ces activités depuis le début de l'exercice. Le T4 doit constituer un point de rupture avec cette situation.",
+    },
+    {
+      id: 'anr-6',
+      num: '06',
+      activitePrevue: 'Note de proposition de simplification des procédures administratives',
+      contenusActions: [
+        "Rédaction d'une note formelle.",
+        'Transmission à la DGL et au Cabinet du Ministère.',
+      ],
+      indicateurs: ['1 note transmise et validée.'],
+      execution: 'Non réalisé',
+      observation:
+        "La note de proposition n'a pas encore été rédigée ni transmise, alors que les retours des usagers au cours des trois trimestres fournissent désormais des arguments de terrain irréfutables. À finaliser et transmettre en urgence au T4. Les données de l'enquête statistique T1 et les retours des tenanciers au T3 constituent un dossier complet.",
+    },
+  ],
+
+  participationsInstitutionnelles: [
+    {
+      id: 'pi-1',
+      date: '19/09/2026 – 10h00',
+      lieu: 'Auditorium du Siège Social du Port Autonome de Pointe-Noire',
+      reference: 'N°050./MID/DPN/P/C/DDPE/SCP',
+      activiteEvenement: 'Cérémonie de Clôture de la VAC+ 3ème Édition',
+      roleParticipation: "Participation officielle en tant qu'autorité départementale invitée.",
+      cadrePatronage: 'Sous le Haut Patronage de Monsieur le Premier Ministre, Chef du Gouvernement.',
+    },
+    {
+      id: 'pi-2',
+      date: '19/09/2026 – 10h00',
+      lieu: 'Station-Service de SCI (2ème sortie du Port Autonome, en face de AGL)',
+      reference: 'N°045./MID/DPN/P/C/DDPE/SCP',
+      activiteEvenement: 'Cérémonie d’inauguration de la Station-Service de SCI à Pointe-Noire',
+      roleParticipation: "Participation officielle en tant qu'autorité départementale invitée.",
+      cadrePatronage: 'Sous le patronage de Monsieur le Ministre des Hydrocarbures.',
+    },
+    {
+      id: 'pi-3',
+      date: '21/09/2026 – 11h00',
+      lieu: 'Salle de Conférence du Conseil Congolais des Chargeurs',
+      reference: 'N°048./MID/DPN/P/C/DDDE/SCP',
+      activiteEvenement: 'Conférence-débat sur la « Campagne Nationale de Sensibilisation sur le Civisme, la Citoyenneté et la Paix »',
+      roleParticipation: "Participation officielle en tant qu'autorité départementale invitée.",
+      cadrePatronage: "Sous le patronage de Monsieur le Ministre Délégué, Chargé de la Jeunesse et de l'Éducation Civique.",
+    },
+  ],
+
+  noteOpportuniteWingWah:
+    "Il est à noter que la cérémonie d'inauguration de la Station-Service SCI du 19 septembre 2026 a vu la présence du Président Directeur Général de la Société Wing Wah, partenaire stratégique recherché par la DDL depuis le début de l'exercice 2026. Cette présence simultanée représente une opportunité de prise de contact directe à exploiter lors du T4 2026.",
 
   difficultes: [
     {
-      id: 'diff-01',
-      service: 'DIRECTION_GENERALE',
-      titre: 'Absence totale de véhicule de service et moyens de mobilité',
+      id: 'diff-1',
+      num: 1,
+      titre: "Blocage de la régularisation des établissements — Signal d'alarme",
       description:
-        'La Direction Départementale et les 4 services ne disposent d’aucun véhicule ni motocyclette de service.',
-      impactPta:
-        'Empêche la réalisation de 35% des contrôles de conformité et des rondes nocturnes en périphérie.',
-      solutionProposee: 'Utilisation des moyens personnels des agents avec frais de transport avancés.',
-      attenteHierarchie: 'Attribution urgente d’un véhicule 4x4 tout-terrain par la Direction Générale.',
+        "Le troisième trimestre confirme une tendance préoccupante : aucun dossier d'autorisation n'a été déposé en bonne et due forme depuis le début de l'exercice 2026. Les tenanciers qui se présentent à la Direction expriment unanimement leur incapacité à rassembler les pièces exigées, dont le coût cumulé absorbe une part significative de leur chiffre d'affaires. Ce blocage signifie qu'un nombre croissant d'établissements opèrent sans autorisation valide — situation qui expose les usagers à des risques et prive l'État d'un outil de régulation de la qualité des loisirs. Une simplification urgente du dossier de demande d'autorisation est incontournable.",
     },
     {
-      id: 'diff-02',
-      service: 'SAF',
-      titre: 'Pénurie critique en papier réglementaire et fournitures de bureau',
+      id: 'diff-2',
+      num: 2,
+      titre: "Partenariats stratégiques — La fenêtre d'opportunité se rétrécit",
       description:
-        'Rupture fréquente de papier A4 80g, encres d’imprimante et chemises d’archivage sécurisées.',
-      impactPta: 'Ralentit la délivrance des autorisations d’exploiter et les attestations départementales.',
-      solutionProposee: 'Mutualisation ponctuelle avec la régie de recettes.',
-      attenteHierarchie: 'Octroi d’une dotation trimestrielle indexée en consommables administratifs.',
-    },
-    {
-      id: 'diff-03',
-      service: 'STATISTIQUES',
-      titre: 'Absence de terminaux numériques (tablettes) pour la collecte statistique',
-      description:
-        'Le Service Statistiques opère exclusivement sur des questionnaires papier vulnérables.',
-      impactPta: 'Retards importants de traitement et risque de perte d’éléments de preuve.',
-      solutionProposee: 'Centralisation et ressaisie hebdomadaire manuelle au bureau.',
-      attenteHierarchie: 'Dotation d’au moins 4 tablettes numériques pour le recensement sur le terrain.',
-    },
-    {
-      id: 'diff-04',
-      service: 'SAF',
-      titre: 'Non-déblocage des crédits de fonctionnement de la Direction Départementale',
-      description:
-        'Aucun fonds de roulement n’a été décaissé pour couvrir les charges courantes du trimestre.',
-      impactPta: 'Paralysie des missions interurbaines et des actions de promotion sur le terrain.',
-      solutionProposee: 'Sollicitation de facilités auprès des partenaires locaux.',
-      attenteHierarchie: 'Plaidoyer auprès du Ministère pour la mise à disposition des crédits délégués.',
+        "À neuf mois de l'exercice 2026, aucune des trois conventions de partenariat prévues n'a été signée. La présence du PDG de Wing Wah à la cérémonie du 19 septembre 2026 constitue une opportunité concrète et immédiate à ne pas laisser passer. Un courrier de prise de contact direct, appuyé des résultats de l'enquête statistique T1, pourrait relancer cette piste au T4. Sans signature d'au moins une convention avant la clôture de l'exercice, l'indicateur «partenariats» du PTA 2026 sera à zéro.",
     },
   ],
 
-  perspectives: [
-    'Poursuite et intensification du recensement exhaustif des établissements de loisirs par le Service Statistiques.',
-    'Renforcement des contrôles inopinés de conformité et de sécurité par le Service Autorisation et Animation (SAA).',
-    'Amplification de l’implantation des points focaux de loisirs en milieu professionnel par le Service Promotion.',
-    'Amélioration du taux de recouvrement des droits régaliels et consolidation de la régie financière par le SAF.',
-    'Lancement de la campagne de sensibilisation des jeunes contre la consommation de stupéfiants dans les espaces de divertissement.',
-  ],
-
-  recommandationsDGL: [
-    'Attribuer en priorité un véhicule de service 4x4 à la Direction Départementale des Loisirs de Pointe-Noire.',
-    'Doter les services de tablettes numériques connectées pour la dématérialisation des fiches statistiques et d’inspection.',
-    'Assurer la régularité du versement des crédits de fonctionnement alloués à la DDL-PN.',
-  ],
-
-  recommandationsPrefet: [
-    'Instruire la Police Nationale et la Gendarmerie pour assister les brigades du SAA lors des opérations de fermeture d’établissements irréguliers.',
-    'Faciliter l’octroi de parcelles du domaine public pour l’aménagement de plateformes récréatives populaires pour la jeunesse.',
-    'Soutenir les initiatives de promotion du loisir sain en milieu d’entreprise auprès des employeurs du département.',
+  suggestions: [
+    {
+      id: 'sug-1',
+      numRomain: 'I',
+      titre: 'Capitaliser sur la présence numérique DDL-PN',
+      description:
+        "Finaliser le TDR de la page Facebook et mettre en œuvre le plan de communication dès le début du T4. Publier régulièrement des contenus institutionnels : présentation des missions de la DDL, informations sur les procédures d'autorisation, actualités des cérémonies, résultats de l'enquête statistique. Utiliser la page comme outil de rapprochement avec les partenaires stratégiques.",
+    },
+    {
+      id: 'sug-2',
+      numRomain: 'II',
+      titre: "Exploiter l'opportunité Wing Wah",
+      description:
+        "Adresser sans délai un courrier de prise de contact direct au PDG de la Société Wing Wah, en valorisant sa présence à la cérémonie du 19 septembre 2026 et en joignant les résultats de l'enquête statistique DDL-PN. Objectif : signer au moins une convention de partenariat avant la clôture de l'exercice 2026.",
+    },
+    {
+      id: 'sug-3',
+      numRomain: 'III',
+      titre: 'Transmettre en urgence la note de simplification des procédures',
+      description:
+        "Rédiger et transmettre à la DGL et au Cabinet du Ministère la note de proposition de simplification de la liste des pièces exigées pour les autorisations d'exploitation. Les retours des tenanciers sur trois trimestres consécutifs constituent un dossier d'argumentation solide et crédible. La simplification est la condition sine qua non de l'augmentation du taux de régularisation.",
+    },
+    {
+      id: 'sug-4',
+      numRomain: 'IV',
+      titre: 'Conduire au moins deux missions de contrôle des établissements',
+      description:
+        "Organiser et conduire les deux missions de contrôle qualité prévues au PTA pour le T4 2026, en priorité dans les arrondissements 4 (Loandjili) et 2 (Mvou-Mvou), identifiés comme zones prioritaires par l'enquête statistique T1.",
+    },
+    {
+      id: 'sug-5',
+      numRomain: 'V',
+      titre: 'Préparer un bilan annuel complet et un PTA 2027 ambitieux',
+      description:
+        "Le T4 doit être l'occasion de produire un bilan annuel exhaustif de l'exercice 2026, intégrant l'ensemble des données des quatre trimestres, les résultats de l'enquête statistique Phase 1, et les enseignements tirés pour l'élaboration d'un PTA 2027 réaliste et opérationnel — qui intégrera dès le départ les contraintes logistiques actuelles.",
+    },
   ],
 
   conclusion:
-    "En définitive, ce deuxième trimestre 2026 démontre la rigueur et la détermination des quatre services (SAF, SAA, Statistiques, Promotion) sous la supervision de la Direction Départementale des Loisirs de Pointe-Noire. Bien que plusieurs objectifs du PTA n'aient pu être atteints à 100% en raison du manque de véhicules et de matériel, le bilan général confirme l'efficacité du dispositif républicain au service des populations de Pointe-Noire et des orientations de la Direction Générale.",
+    "Le troisième trimestre 2026 de la Direction Départementale des Loisirs de Pointe-Noire s'achève sur un bilan marqué par la persistance des contraintes opérationnelles connues, mais aussi par l'émergence d'une initiative nouvelle qui mérite d'être saluée : la création de la première présence numérique officielle de la DDL-PN.\n\nSi les activités à fort impact direct sur les populations — missions de contrôle, délivrance d'autorisations, enquête statistique Phase 2, promotion des loisirs sains — restent en attente des conditions de leur réalisation, la DDL a démontré au cours de ce trimestre sa capacité à innover et à créer de la valeur institutionnelle même dans des conditions contraintes. La page Facebook de la DDL-PN est une preuve concrète que l'institution peut progresser avec les outils à sa disposition, sans attendre que les conditions idéales soient réunies.\n\nLe quatrième trimestre 2026 sera décisif. À moins de quatre-vingt-dix jours de la clôture de l'exercice, la DDL doit transformer l'essai sur les indicateurs restants : signer au moins une convention de partenariat, conduire ses premières missions de contrôle autonomes, transmettre sa note de simplification des procédures, et produire un bilan annuel à la hauteur du travail accompli.",
+
+  directeurNom: 'Jean Richard NTSEKE NGOUAKA',
+  directeurTitre: 'Le Directeur Départemental des Loisirs de Pointe-Noire',
+  distributionList: [
+    'Direction Générale des Loisirs',
+    'Cabinet du Ministère de la Culture, des Arts, du Patrimoine National et de l\'Industrie Touristique',
+    'Cabinet du Préfet de Pointe-Noire',
+    'Archives DDL-PN',
+  ],
 };

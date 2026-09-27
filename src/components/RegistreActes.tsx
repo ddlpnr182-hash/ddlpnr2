@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { printElement } from '../lib/printUtils.ts';
 import {
   apiFetchDossiers,
   apiUpsertDossier,
@@ -129,6 +130,7 @@ interface RegistreActesProps {
 }
 
 export const RegistreActes: React.FC<RegistreActesProps> = ({ onOpenInAtelier }) => {
+  const grandLivreRef = useRef<HTMLDivElement>(null);
   const [dossiers, setDossiers] = useState<DossierRecord[]>(initialDossiers);
   const [selectedDossier, setSelectedDossier] = useState<DossierRecord>(initialDossiers[0]);
   const [searchQuery, setSearchQuery] = useState('');
@@ -258,7 +260,7 @@ export const RegistreActes: React.FC<RegistreActesProps> = ({ onOpenInAtelier })
   });
 
   return (
-    <div className="flex flex-col w-full gap-6 pb-12 text-left">
+    <div ref={grandLivreRef} className="flex flex-col w-full gap-6 pb-12 text-left">
       {/* Header Régalienne */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
@@ -298,7 +300,9 @@ export const RegistreActes: React.FC<RegistreActesProps> = ({ onOpenInAtelier })
           </button>
           <button
             type="button"
-            onClick={() => window.print()}
+            onClick={() => {
+              printElement(grandLivreRef.current, 'Grand_Livre_Registre_Actes_DDLPN');
+            }}
             className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#ffffff] text-[#022448] font-sans text-[12px] font-bold rounded shadow-sm border border-[#c4c6cf] hover:bg-[#f1f3ff] transition-colors cursor-pointer"
           >
             <span className="material-symbols-outlined text-[18px]">print</span>

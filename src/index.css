@@ -109,25 +109,21 @@
     size: A4 portrait;
     margin: 10mm 12mm;
   }
-  header, footer, nav, aside, .no-print, button, .tab-buttons, input[type="file"] {
+  header, footer, nav, aside, .no-print, button, .tab-buttons, input[type="file"], .sidebar-container {
     display: none !important;
   }
   html, body {
     background: white !important;
-    color: black !important;
+    color: #161c27 !important;
     padding: 0 !important;
     margin: 0 !important;
     width: 100% !important;
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
   }
-  #root, .min-h-screen, .main-content-area, main, div {
-    padding-left: 0 !important;
-    padding-right: 0 !important;
-    padding-top: 0 !important;
-    margin-left: 0 !important;
-    margin-right: 0 !important;
-    margin-top: 0 !important;
+  #root, .min-h-screen, .main-content-area, main {
+    padding: 0 !important;
+    margin: 0 !important;
     max-width: 100% !important;
     width: 100% !important;
   }
@@ -135,7 +131,7 @@
     page-break-after: always !important;
     break-after: page !important;
   }
-  .page-break-before {
+  .page-break-before, .page-break {
     page-break-before: always !important;
     break-before: page !important;
   }
@@ -143,12 +139,13 @@
     page-break-inside: avoid !important;
     break-inside: avoid !important;
   }
-  .print-area {
+  .print-area, .printable-document {
     box-shadow: none !important;
     border: none !important;
     width: 100% !important;
     max-width: 100% !important;
     margin: 0 !important;
     padding: 0 !important;
+    background: white !important;
   }
 }

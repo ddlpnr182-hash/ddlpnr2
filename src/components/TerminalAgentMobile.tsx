@@ -1,5 +1,6 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef } from 'react';
 import { ArmoiriesCongo, LogoDDLPN } from './RepublicSeal.tsx';
+import { printElement } from '../lib/printUtils.ts';
 import {
   FieldEstablishment,
   AgentAccount,
@@ -36,6 +37,10 @@ export const TerminalAgentMobile: React.FC<TerminalAgentMobileProps> = ({
     switchAgent,
     agentsList,
   } = useSession();
+
+  const convocationPrintRef = useRef<HTMLDivElement>(null);
+  const receiptMobilePrintRef = useRef<HTMLDivElement>(null);
+  const caissePrintRef = useRef<HTMLDivElement>(null);
 
   const [activeTab, setActiveTab] = useState<MobileTab>('recensement');
   const [collisionWarning, setCollisionWarning] = useState<{
@@ -1041,10 +1046,10 @@ export const TerminalAgentMobile: React.FC<TerminalAgentMobileProps> = ({
             </div>
 
             {/* Corps du document formaté officiel */}
-            <div className="p-5 sm:p-6 space-y-4 font-serif text-sm bg-white" id="printable-convocation">
+            <div ref={convocationPrintRef} className="p-5 sm:p-6 space-y-4 font-serif text-sm bg-white" id="printable-convocation">
               <div className="text-center border-b pb-3 border-gray-200">
                 <p className="font-sans text-[11px] font-bold uppercase text-[#006d2f] tracking-widest">
-                  MINISTÈRE DU TOURISME ET DES LOISIRS
+                  MINISTÈRE DE LA CULTURE, DES ARTS, DU PATRIMOINE NATIONAL ET DE L'INDUSTRIE TOURISTIQUE
                 </p>
                 <p className="font-garamond text-base font-bold text-[#022448] uppercase">
                   DIRECTION DÉPARTEMENTALE DES LOISIRS DE POINTE-NOIRE
@@ -1135,7 +1140,9 @@ export const TerminalAgentMobile: React.FC<TerminalAgentMobileProps> = ({
               <div className="flex items-center gap-2 w-full sm:w-auto">
                 <button
                   type="button"
-                  onClick={() => window.print()}
+                  onClick={() => {
+                    printElement(convocationPrintRef.current, `Convocation_${generatedConvocation.ref}`);
+                  }}
                   className="flex-1 sm:flex-none px-4 py-2.5 bg-[#022448] hover:bg-[#142943] text-white rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 shadow-sm cursor-pointer"
                 >
                   <span className="material-symbols-outlined text-base">print</span>
@@ -1609,13 +1616,13 @@ export const TerminalAgentMobile: React.FC<TerminalAgentMobileProps> = ({
             </div>
 
             {/* Corps du reçu */}
-            <div className="p-5 sm:p-6 space-y-4 font-sans text-xs bg-white" id="printable-receipt">
+            <div ref={receiptMobilePrintRef} className="p-5 sm:p-6 space-y-4 font-sans text-xs bg-white" id="printable-receipt">
               <div className="text-center border-b pb-3 border-gray-200">
                 <p className="text-[10px] font-bold uppercase text-[#006d2f] tracking-widest">
-                  RÉPUBLIQUE DU CONGO • MINISTÈRE DU TOURISME ET DES LOISIRS
+                  RÉPUBLIQUE DU CONGO • MINISTÈRE DE LA CULTURE, DES ARTS, DU PATRIMOINE NATIONAL ET DE L'INDUSTRIE TOURISTIQUE
                 </p>
                 <p className="font-garamond text-sm sm:text-base font-bold text-[#022448]">
-                  Direction Départementale du Tourisme et des Loisirs de Pointe-Noire
+                  Direction Départementale des Loisirs de Pointe-Noire (DDL-PN)
                 </p>
                 <p className="text-[10px] text-gray-500">Régie des Recettes &bull; Quittance Officielle Sécurisée</p>
               </div>
@@ -1716,7 +1723,9 @@ export const TerminalAgentMobile: React.FC<TerminalAgentMobileProps> = ({
               <div className="flex items-center gap-2 w-full sm:w-auto">
                 <button
                   type="button"
-                  onClick={() => window.print()}
+                  onClick={() => {
+                    printElement(receiptMobilePrintRef.current, `Quittance_${generatedReceipt.receiptRef}`);
+                  }}
                   className="flex-1 sm:flex-none px-4 py-2.5 bg-[#022448] hover:bg-[#142943] text-white rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 shadow-sm cursor-pointer"
                 >
                   <span className="material-symbols-outlined text-base">print</span>
@@ -1884,7 +1893,7 @@ export const TerminalAgentMobile: React.FC<TerminalAgentMobileProps> = ({
       {/* ONGLET 4 : CAISSE DU JOUR & BORDEREAU DE TRANSMISSION                     */}
       {/* ========================================================================= */}
       {activeTab === 'caisse' && (
-        <div className="bg-white rounded-2xl shadow-md border border-[#dde2f3] overflow-hidden p-4 sm:p-6 space-y-4">
+        <div ref={caissePrintRef} className="bg-white rounded-2xl shadow-md border border-[#dde2f3] overflow-hidden p-4 sm:p-6 space-y-4">
           <div className="bg-gradient-to-r from-[#022448] to-[#004528] text-white p-5 rounded-xl shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
               <span className="text-[10px] text-[#ffe082] uppercase font-black tracking-wider block">
@@ -1899,7 +1908,9 @@ export const TerminalAgentMobile: React.FC<TerminalAgentMobileProps> = ({
             </div>
             <button
               type="button"
-              onClick={() => window.print()}
+              onClick={() => {
+                printElement(caissePrintRef.current, `Bordereau_Caisse_Agent_${currentAgent.name.replace(/[^a-zA-Z0-9]/g, '_')}`);
+              }}
               className="px-4 py-2.5 bg-[#ffe082] text-[#022448] font-bold text-xs rounded-xl flex items-center gap-2 cursor-pointer shadow-md"
             >
               <span className="material-symbols-outlined text-base">print</span>

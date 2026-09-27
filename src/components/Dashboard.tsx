@@ -238,6 +238,9 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigateToTab }) => {
   const [liveEstablishments, setLiveEstablishments] = useState<FieldEstablishment[]>([]);
   const [isSupabaseLive, setIsSupabaseLive] = useState(false);
 
+  // Live simulation tick indicator
+  const [lastRefreshTime, setLastRefreshTime] = useState<string>('À l\'instant (Synchro Supabase)');
+
   // Load establishments from Supabase on mount
   const [syncedAgentRdvs, setSyncedAgentRdvs] = useState<any[]>([]);
 
@@ -299,8 +302,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigateToTab }) => {
     return liveEstablishments.filter((e) => canAccessEstablishment(e));
   }, [isAdmin, adminAgentFilter, selectedFilteredAgent, liveEstablishments, canAccessEstablishment]);
 
-  // Live simulation tick indicator
-  const [lastRefreshTime, setLastRefreshTime] = useState<string>('À l\'instant (Synchro Supabase)');
 
   const showToast = (msg: string) => {
     setToastMessage(msg);

@@ -1,6 +1,7 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef } from 'react';
 import { RepublicSeal } from './RepublicSeal.tsx';
 import { FieldEstablishment, AgentAccount } from '../lib/supabase.ts';
+import { printElement } from '../lib/printUtils.ts';
 
 export interface EtatVersementTresorProps {
   establishments: FieldEstablishment[];
@@ -13,6 +14,7 @@ export const EtatVersementTresor: React.FC<EtatVersementTresorProps> = ({
   agents,
   onClose,
 }) => {
+  const printSheetRef = useRef<HTMLDivElement>(null);
   const [selectedPeriod, setSelectedPeriod] = useState<'jour' | 'semaine' | 'mois' | 'tout'>('mois');
   const [selectedAgentFilter, setSelectedAgentFilter] = useState<string>('TOUS');
 
@@ -164,7 +166,7 @@ export const EtatVersementTresor: React.FC<EtatVersementTresorProps> = ({
   };
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-[#dde2f3] p-6 space-y-6 text-[#161c27]">
+    <div ref={printSheetRef} className="bg-white rounded-xl shadow-sm border border-[#dde2f3] p-6 space-y-6 text-[#161c27]">
       {/* Official Header */}
       <div className="border-b border-[#dde2f3] pb-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="flex items-start gap-4">
@@ -200,7 +202,7 @@ export const EtatVersementTresor: React.FC<EtatVersementTresorProps> = ({
           </button>
           <button
             type="button"
-            onClick={() => window.print()}
+            onClick={() => printElement(printSheetRef.current, 'Bordereau_Versements_Tresor_DDLPN')}
             className="px-3.5 py-2 bg-[#022448] hover:bg-[#142943] text-white rounded-lg font-sans text-xs font-bold flex items-center gap-1.5 shadow-sm cursor-pointer"
           >
             <span className="material-symbols-outlined text-[16px]">print</span>

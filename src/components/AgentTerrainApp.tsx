@@ -58,6 +58,7 @@ import {
   formatISOToFR,
   normalizeDateToISO,
 } from './CalendrierRdvTerrain.tsx';
+import { printElement } from '../lib/printUtils.ts';
 import { ArmoiriesCongo, LogoDDLPN } from './RepublicSeal.tsx';
 import {
   POINTE_NOIRE_ARRONDISSEMENTS,
@@ -266,29 +267,31 @@ export const AgentTerrainApp: React.FC<AgentTerrainAppProps> = ({
       // Prochaine Échéance si non soldé
       if (est.nextDueDate && !isSettled) {
         const iso = normalizeDateToISO(est.nextDueDate);
-        events.push({
-          id: `DUE-${est.id}`,
-          establishmentId: est.id,
-          title: `⏰ Relance échéance : ${est.name} (Reste: ${(est.totalDue - est.paidAmount).toLocaleString('fr-FR')} F)`,
-          type: 'rappel',
-          date: iso,
-          time: est.nextAppointmentTime || '09:00',
-          establishmentName: est.name,
-          promoterName: est.promoter,
-          promoterPhone: est.phone,
-          district: est.district,
-          address: est.address,
-          amount: est.totalDue - est.paidAmount,
-          totalDue: est.totalDue,
-          paidAmount: est.paidAmount,
-          notes: `Rappel de versement pour solde des droits d'exploitation`,
-          status: 'programme',
-          color: est.nextAppointmentType === 'TERRAIN' ? '#dc2626' : '#e37400',
-          nextActionType: est.nextAppointmentType === 'TERRAIN' ? 'AGENT_PASSAGE' : 'DIRECTION_VISIT',
-          firstPaymentDate: firstPayment,
-          anniversaryRenewalDate: anniversaryDate,
-          paymentHistory: est.paymentHistory,
-        });
+        if (iso) {
+          events.push({
+            id: `DUE-${est.id}`,
+            establishmentId: est.id,
+            title: `⏰ Relance échéance : ${est.name} (Reste: ${(est.totalDue - est.paidAmount).toLocaleString('fr-FR')} F)`,
+            type: 'rappel',
+            date: iso,
+            time: est.nextAppointmentTime || '09:00',
+            establishmentName: est.name,
+            promoterName: est.promoter,
+            promoterPhone: est.phone,
+            district: est.district,
+            address: est.address,
+            amount: est.totalDue - est.paidAmount,
+            totalDue: est.totalDue,
+            paidAmount: est.paidAmount,
+            notes: `Rappel de versement pour solde des droits d'exploitation`,
+            status: 'programme',
+            color: est.nextAppointmentType === 'TERRAIN' ? '#dc2626' : '#e37400',
+            nextActionType: est.nextAppointmentType === 'TERRAIN' ? 'AGENT_PASSAGE' : 'DIRECTION_VISIT',
+            firstPaymentDate: firstPayment,
+            anniversaryRenewalDate: anniversaryDate,
+            paymentHistory: est.paymentHistory,
+          });
+        }
       }
 
       // Événement de Renouvellement Annuel Automatique (+1 an) si soldé
@@ -588,6 +591,8 @@ export const AgentTerrainApp: React.FC<AgentTerrainAppProps> = ({
         next_action_type: willSettle ? undefined : formNextActionType,
       };
 
+      const computedNextDueDateStr = willSettle ? computedAnniversaryDate : formatISOToFR(formNextDueDate);
+
       const updatedHistory = [
         ...(est?.paymentHistory || []),
         {
@@ -595,8 +600,11 @@ export const AgentTerrainApp: React.FC<AgentTerrainAppProps> = ({
           date: new Date().toLocaleDateString('fr-FR'),
           amount: formAmount,
           collectedBy: `${currentAgent.name} (Terrain)`,
-          location: 'TERRAIN',
+          location: 'TERRAIN' as const,
           receiptRef,
+          nextDueDate: computedNextDueDateStr,
+          nextAppointmentType: formNextActionType === 'AGENT_PASSAGE' ? ('TERRAIN' as const) : ('BUREAU' as const),
+          nextAppointmentTime: '10:00',
         },
       ];
 
@@ -618,17 +626,18 @@ export const AgentTerrainApp: React.FC<AgentTerrainAppProps> = ({
           penaltyFee: 0,
           ratePerSqm: 1000,
           installmentsCount: 3,
+          sanctions: [],
         }),
         totalDue: formTotalDue,
         paidAmount: newTotalPaid,
-        nextDueDate: willSettle ? computedAnniversaryDate : formatISOToFR(formNextDueDate),
+        nextDueDate: computedNextDueDateStr,
         nextAppointmentType: formNextActionType === 'AGENT_PASSAGE' ? 'TERRAIN' : 'BUREAU',
         status: willSettle ? 'autorise_dgl' : 'attestation_depot',
         paymentHistory: updatedHistory,
       };
 
       // Also schedule next calendar event (either next installment visit or annual renewal)
-      const scheduledEventDate = willSettle ? normalizeDateToISO(computedAnniversaryDate) : formNextDueDate;
+      const scheduledEventDate = (willSettle ? normalizeDateToISO(computedAnniversaryDate) : formNextDueDate) || formNextDueDate;
       const followUpRdv: AgentRendezVous = {
         id: `RDV-FLW-${Date.now()}`,
         establishmentId: updatedEst.id,
@@ -2078,79 +2087,81 @@ export const AgentTerrainApp: React.FC<AgentTerrainAppProps> = ({
       {modalMode === 'convocation_view' && activeConvocation && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 animate-fadeIn">
           <div className="bg-white rounded-2xl border border-gray-300 w-full max-w-xl shadow-2xl p-6 space-y-4 max-h-[92vh] overflow-y-auto">
-            {/* Header Officiel République du Congo */}
-            <div className="border-b-2 border-black pb-3 text-center space-y-1">
-              <div className="flex justify-between items-center">
-                <ArmoiriesCongo className="w-12 h-12" />
-                <div>
-                  <h4 className="font-serif text-xs font-bold tracking-wider uppercase">
-                    République du Congo
-                  </h4>
-                  <p className="text-[10px] italic">Unité - Travail - Progrès</p>
+            <div id="convocation-print-sheet" className="space-y-4 p-2 bg-white text-[#161c27]">
+              {/* Header Officiel République du Congo */}
+              <div className="border-b-2 border-black pb-3 text-center space-y-1">
+                <div className="flex justify-between items-center">
+                  <ArmoiriesCongo className="w-12 h-12" />
+                  <div>
+                    <h4 className="font-serif text-xs font-bold tracking-wider uppercase">
+                      République du Congo
+                    </h4>
+                    <p className="text-[10px] italic">Unité - Travail - Progrès</p>
+                  </div>
+                  <LogoDDLPN className="w-12 h-12" />
                 </div>
-                <LogoDDLPN className="w-12 h-12" />
+                <div className="pt-2 text-[10px] uppercase font-bold text-[#022448] leading-tight">
+                  MINISTÈRE DE LA CULTURE, DES ARTS, DU PATRIMOINE NATIONAL ET DE L'INDUSTRIE TOURISTIQUE
+                  <br />
+                  <span className="text-xs text-[#006d2f]">Direction Départementale des Loisirs de Pointe-Noire</span>
+                </div>
               </div>
-              <div className="pt-2 text-[10px] uppercase font-bold text-[#022448] leading-tight">
-                Ministère du Contrôle d’État, de la Qualité du Service Public et de la Lutte contre les Antivaleurs, de l'Artisanat et du Tourisme
-                <br />
-                <span className="text-xs text-[#006d2f]">Direction Départementale des Loisirs de Pointe-Noire</span>
+
+              {/* Document Title */}
+              <div className="text-center py-1">
+                <span className="inline-block px-3 py-1 bg-gray-100 border border-gray-400 font-mono font-bold text-xs tracking-wider uppercase">
+                  INVITATION / CONVOCATION OFFICIELLE N° {activeConvocation.ref}
+                </span>
               </div>
-            </div>
 
-            {/* Document Title */}
-            <div className="text-center py-1">
-              <span className="inline-block px-3 py-1 bg-gray-100 border border-gray-400 font-mono font-bold text-xs tracking-wider uppercase">
-                INVITATION / CONVOCATION OFFICIELLE N° {activeConvocation.ref}
-              </span>
-            </div>
-
-            {/* Corps de la convocation */}
-            <div className="space-y-3 text-xs leading-relaxed text-gray-800">
-              <p>
-                <strong>Destinataire :</strong> M./Mme <strong className="text-black">{activeConvocation.promoter}</strong>, promoteur/gérant de l'établissement dénommé <strong className="text-black">« {activeConvocation.estName} »</strong>, situé à {activeConvocation.district}.
-              </p>
-
-              <div className="bg-[#f8fafd] border border-gray-200 p-3 rounded-xl space-y-1.5">
-                <p className="font-semibold text-black">
-                  Vous êtes prié(e) de vous présenter impérativement :
+              {/* Corps de la convocation */}
+              <div className="space-y-3 text-xs leading-relaxed text-gray-800">
+                <p>
+                  <strong>Destinataire :</strong> M./Mme <strong className="text-black">{activeConvocation.promoter}</strong>, promoteur/gérant de l'établissement dénommé <strong className="text-black">« {activeConvocation.estName} »</strong>, situé à {activeConvocation.district}.
                 </p>
-                <div className="grid grid-cols-2 gap-2 text-xs">
-                  <div>
-                    <span className="text-gray-500 block">Date fixée :</span>
-                    <strong className="text-[#022448] font-bold">{activeConvocation.date}</strong>
+
+                <div className="bg-[#f8fafd] border border-gray-200 p-3 rounded-xl space-y-1.5">
+                  <p className="font-semibold text-black">
+                    Vous êtes prié(e) de vous présenter impérativement :
+                  </p>
+                  <div className="grid grid-cols-2 gap-2 text-xs">
+                    <div>
+                      <span className="text-gray-500 block">Date fixée :</span>
+                      <strong className="text-[#022448] font-bold">{activeConvocation.date}</strong>
+                    </div>
+                    <div>
+                      <span className="text-gray-500 block">Heure de réception :</span>
+                      <strong className="text-[#022448] font-bold">{activeConvocation.time}</strong>
+                    </div>
                   </div>
                   <div>
-                    <span className="text-gray-500 block">Heure de réception :</span>
-                    <strong className="text-[#022448] font-bold">{activeConvocation.time}</strong>
+                    <span className="text-gray-500 block">Lieu de convocation :</span>
+                    <strong>{activeConvocation.office}</strong>
                   </div>
                 </div>
-                <div>
-                  <span className="text-gray-500 block">Lieu de convocation :</span>
-                  <strong>{activeConvocation.office}</strong>
-                </div>
-              </div>
 
-              <p className="text-justify text-[11px] text-gray-600">
-                <strong>Objet :</strong> Régularisation administrative de l'activité de loisirs, examen de conformité et fixation des droits d'exploitation prévus par la réglementation en vigueur.
-              </p>
+                <p className="text-justify text-[11px] text-gray-600">
+                  <strong>Objet :</strong> Régularisation administrative de l'activité de loisirs, examen de conformité et fixation des droits d'exploitation prévus par la réglementation en vigueur.
+                </p>
 
-              <div className="pt-2 border-t border-gray-200 flex justify-between items-end text-[10px] text-gray-600">
-                <div>
-                  <span>Délivré sur le terrain par l'Agent Assermenté :</span>
-                  <p className="font-bold text-black">{activeConvocation.agentName} ({activeConvocation.agentBadge})</p>
-                </div>
-                <div className="text-right">
-                  <span>Pointe-Noire, le {new Date().toLocaleDateString('fr-FR')}</span>
-                  <p className="font-serif italic font-bold">Pour le Directeur Départemental</p>
+                <div className="pt-2 border-t border-gray-200 flex justify-between items-end text-[10px] text-gray-600">
+                  <div>
+                    <span>Délivré sur le terrain par l'Agent Assermenté :</span>
+                    <p className="font-bold text-black">{activeConvocation.agentName} ({activeConvocation.agentBadge})</p>
+                  </div>
+                  <div className="text-right">
+                    <span>Pointe-Noire, le {new Date().toLocaleDateString('fr-FR')}</span>
+                    <p className="font-serif italic font-bold">Pour le Directeur Départemental</p>
+                  </div>
                 </div>
               </div>
             </div>
 
             {/* Action Buttons */}
-            <div className="pt-3 border-t border-gray-200 flex flex-wrap items-center justify-between gap-2">
+            <div className="pt-3 border-t border-gray-200 flex flex-wrap items-center justify-between gap-2 no-print">
               <button
                 onClick={() => setModalMode(null)}
-                className="px-4 py-2 rounded-xl text-xs font-semibold text-gray-600 hover:bg-gray-100"
+                className="px-4 py-2 rounded-xl text-xs font-semibold text-gray-600 hover:bg-gray-100 cursor-pointer"
               >
                 Fermer
               </button>
@@ -2170,8 +2181,8 @@ export const AgentTerrainApp: React.FC<AgentTerrainAppProps> = ({
                 )}
 
                 <button
-                  onClick={() => window.print()}
-                  className="px-4 py-2 rounded-xl bg-[#022448] text-white font-bold text-xs flex items-center gap-1.5 hover:bg-[#001830]"
+                  onClick={() => printElement(document.getElementById('convocation-print-sheet'), `Convocation_${activeConvocation.ref}`)}
+                  className="px-4 py-2 rounded-xl bg-[#022448] text-white font-bold text-xs flex items-center gap-1.5 hover:bg-[#001830] cursor-pointer"
                 >
                   <Printer className="w-3.5 h-3.5" /> Imprimer / A4
                 </button>

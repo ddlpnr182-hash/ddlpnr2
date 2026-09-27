@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { RepublicSeal, ArmoiriesCongo, LogoDDLPN } from './RepublicSeal.tsx';
+import { printElement } from '../lib/printUtils.ts';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 
@@ -347,7 +348,7 @@ Le Chef de brigade est chargé de l'application stricte de la présente instruct
     } catch (err) {
       console.error('Erreur génération PDF:', err);
       showToast("Erreur lors de l'export direct. Lancement de l'impression système...");
-      window.print();
+      printElement(pageA4Ref.current, numero.replace(/[\/\s]/g, '_'));
     } finally {
       setIsGeneratingPdf(false);
     }
@@ -609,7 +610,7 @@ Le Chef de brigade est chargé de l'application stricte de la présente instruct
 
               <button
                 type="button"
-                onClick={() => window.print()}
+                onClick={() => printElement(pageA4Ref.current, `${numero} - ${objet}`)}
                 className="flex items-center justify-center gap-2 py-2 px-3 bg-[#e8eeff] text-[#022448] rounded font-sans text-[11px] uppercase font-semibold hover:bg-[#dde2f3] transition-all cursor-pointer"
               >
                 <span className="material-symbols-outlined text-base">print</span> Imprimer Papier

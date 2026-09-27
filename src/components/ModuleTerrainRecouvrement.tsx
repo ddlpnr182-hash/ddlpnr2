@@ -1,5 +1,6 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { RepublicSeal, ArmoiriesCongo, LogoDDLPN } from './RepublicSeal.tsx';
+import { printElement } from '../lib/printUtils.ts';
 import {
   apiFetchEstablishments,
   apiUpsertEstablishment,
@@ -461,6 +462,9 @@ export const ModuleTerrainRecouvrement: React.FC<ModuleTerrainRecouvrementProps>
     setShowLoginModal,
     agentsList,
   } = useSession();
+
+  const receiptTicketRef = useRef<HTMLDivElement>(null);
+  const docViewRef = useRef<HTMLDivElement>(null);
 
   const [activeSubTab, setActiveSubTab] = useState<SubTabType>(initialSubTab);
 
@@ -2649,7 +2653,7 @@ export const ModuleTerrainRecouvrement: React.FC<ModuleTerrainRecouvrementProps>
       {/* MODAL 3: AFFICHAGE DU REÇU OFFICIEL AVEC PROCHAINE ÉCHÉANCE */}
       {generatedReceipt && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
-          <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-6 border-2 border-[#022448] animate-fade-in text-center font-sans space-y-4">
+          <div ref={receiptTicketRef} className="bg-white rounded-xl shadow-2xl max-w-md w-full p-6 border-2 border-[#022448] animate-fade-in text-center font-sans space-y-4">
             <div className="flex justify-center items-center gap-3">
               <ArmoiriesCongo size={46} />
               <div className="h-8 w-[1px] bg-gray-200"></div>
@@ -2707,7 +2711,7 @@ export const ModuleTerrainRecouvrement: React.FC<ModuleTerrainRecouvrementProps>
               <button
                 type="button"
                 onClick={() => {
-                  window.print();
+                  printElement(receiptTicketRef.current, `Recu_${generatedReceipt.receiptRef}`);
                 }}
                 className="px-4 py-2 bg-[#022448] text-white rounded-lg text-xs font-bold flex items-center gap-1 cursor-pointer"
               >
@@ -2747,7 +2751,7 @@ export const ModuleTerrainRecouvrement: React.FC<ModuleTerrainRecouvrementProps>
             </div>
 
             {/* Official Document Sheet Preview */}
-            <div className="p-6 sm:p-8 bg-white border border-[#c4c7d4] rounded shadow-inner font-serif text-xs text-[#161c27] space-y-4 leading-relaxed">
+            <div ref={docViewRef} className="p-6 sm:p-8 bg-white border border-[#c4c7d4] rounded shadow-inner font-serif text-xs text-[#161c27] space-y-4 leading-relaxed">
               {/* Header */}
               <div className="flex justify-between items-start text-[10px] font-sans">
                 <div>
@@ -2928,7 +2932,12 @@ export const ModuleTerrainRecouvrement: React.FC<ModuleTerrainRecouvrementProps>
             <div className="flex justify-end gap-2">
               <button
                 type="button"
-                onClick={() => window.print()}
+                onClick={() => {
+                  printElement(
+                    docViewRef.current,
+                    `Acte_${activeDocView.type}_${activeDocView.est.name.replace(/[^a-zA-Z0-9]/g, '_')}`
+                  );
+                }}
                 className="px-4 py-2 bg-[#022448] text-white rounded-lg text-xs font-bold flex items-center gap-1.5 cursor-pointer shadow-sm hover:bg-[#142943]"
               >
                 <span className="material-symbols-outlined text-[16px]">print</span>

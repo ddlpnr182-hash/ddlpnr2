@@ -1,8 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
+import { printElement } from '../lib/printUtils.ts';
 
 type SectionId = 'juridique' | 'protocole' | 'modeles' | 'viewer';
 
 export const ReferentielTextes: React.FC = () => {
+  const modelSheetRef = useRef<HTMLDivElement>(null);
   const [activeSection, setActiveSection] = useState<SectionId>('juridique');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('ALL');
@@ -771,7 +773,10 @@ export const ReferentielTextes: React.FC = () => {
               <div className="flex items-center gap-2">
                 <button
                   type="button"
-                  onClick={() => copyToClipboard('Contenu de la fiche type', 'Texte du gabarit copié !')}
+                  onClick={() => {
+                    const text = modelSheetRef.current?.innerText || 'Contenu du gabarit';
+                    copyToClipboard(text, 'Texte du gabarit copié dans le presse-papier !');
+                  }}
                   className="px-4 py-1.5 bg-white text-[#022448] rounded font-sans text-[11px] uppercase font-bold border border-[#c4c6cf] hover:bg-[#f1f3ff] transition-colors flex items-center gap-1 cursor-pointer"
                 >
                   <span className="material-symbols-outlined text-[16px]">content_copy</span>
@@ -779,7 +784,7 @@ export const ReferentielTextes: React.FC = () => {
                 </button>
                 <button
                   type="button"
-                  onClick={() => window.print()}
+                  onClick={() => printElement(modelSheetRef.current, `Fiche_Type_${activeModel}_DDLPN`)}
                   className="px-4 py-1.5 bg-[#022448] text-white rounded font-sans text-[11px] uppercase font-bold hover:bg-[#1e3a5f] transition-colors flex items-center gap-1 cursor-pointer"
                 >
                   <span className="material-symbols-outlined text-[16px]">print</span>
@@ -789,7 +794,10 @@ export const ReferentielTextes: React.FC = () => {
             </div>
 
             {/* A4 Sheet Container */}
-            <div className="w-full max-w-[794px] bg-white shadow-xl rounded p-8 sm:p-12 flex flex-col gap-6 text-[#161c27] border border-[#dde2f3]">
+            <div
+              ref={modelSheetRef}
+              className="printable-document w-full max-w-[794px] bg-white shadow-xl rounded p-8 sm:p-12 flex flex-col gap-6 text-[#161c27] border border-[#dde2f3]"
+            >
               {/* Header */}
               <div className="flex justify-between items-start">
                 <div className="flex flex-col items-center text-center max-w-[320px]">
