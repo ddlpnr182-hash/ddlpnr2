@@ -11,6 +11,11 @@ export const Footer: React.FC = () => {
           <span className="font-serif text-[12px] text-[#43474e]">
             Direction Générale des Loisirs — Ministère de la Culture, des Arts, du Patrimoine National et de l'Industrie Touristique
           </span>
+          <div className="flex flex-wrap items-center justify-center md:justify-start gap-3 text-[11px] font-sans text-[#1A3C5E] font-medium mt-0.5">
+            <span>📞 Tél : <strong>+242 06 186 4275</strong></span>
+            <span>✉️ Email : <a href="mailto:ddloisirs_pnr@loisirs.cg" className="hover:underline"><strong>ddloisirs_pnr@loisirs.cg</strong></a></span>
+            <span>🌐 Web : <a href="https://www.loisirs.cg" target="_blank" rel="noreferrer" className="hover:underline"><strong>www.loisirs.cg</strong></a></span>
+          </div>
         </div>
         <div className="flex flex-col items-center md:items-end gap-1">
           <span className="font-sans text-[10px] uppercase text-[#6d5e00] font-bold tracking-widest">

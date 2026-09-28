@@ -5,7 +5,7 @@
  * Avec gestion avancée des conflits de données, horodatage précis et fusion non-destructive.
  */
 
-import { FieldEstablishment } from './supabase.ts';
+import { FieldEstablishment, apiUpsertEstablishment, apiRecordPayment, supabase, isSupabaseConfigured } from './supabase.ts';
 
 export interface AgentRendezVous {
   id: string;
@@ -281,47 +281,80 @@ export class OfflineSyncService {
         let success = false;
 
         if (action.type === 'create_establishment' || action.type === 'update_establishment') {
-          // Pre-check for conflict: check if remote record exists
           const estPayload = action.payload?.establishment || action.payload;
-          if (estPayload?.id) {
-            try {
-              const checkRes = await fetch(`/api/establishments`);
-              if (checkRes.ok) {
-                const { establishments } = await checkRes.json();
-                const existingRemote = establishments?.find((e: any) => e.id === estPayload.id);
-
-                if (existingRemote) {
-                  // Merge local changes with remote version
-                  const mergedEst = this.mergeEstablishmentState(estPayload, existingRemote);
-                  action.payload = { establishment: mergedEst };
-                  conflictsResolved++;
-                }
-              }
-            } catch (err) {
-              // Non-blocking for check
-            }
+          try {
+            const res = await fetch('/api/establishments', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(action.payload),
+            });
+            success = res.ok;
+          } catch {
+            success = false;
           }
 
-          const res = await fetch('/api/establishments', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(action.payload),
-          });
-          success = res.ok;
+          // Direct Supabase client fallback (Vercel static deploy)
+          if (!success && isSupabaseConfigured && estPayload) {
+            const result = await apiUpsertEstablishment(estPayload);
+            success = result.success;
+          }
         } else if (action.type === 'record_payment') {
-          const res = await fetch('/api/payments', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(action.payload),
-          });
-          success = res.ok;
+          try {
+            const res = await fetch('/api/payments', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(action.payload),
+            });
+            success = res.ok;
+          } catch {
+            success = false;
+          }
+
+          // Direct Supabase fallback
+          if (!success && isSupabaseConfigured && action.payload?.payment) {
+            const p = action.payload.payment;
+            const result = await apiRecordPayment({
+              establishmentId: p.establishment_id,
+              amount: p.amount_paid,
+              totalFee: p.total_fee,
+              nextDueDate: p.prochain_versement_date,
+              agentId: p.agent_id,
+            });
+            success = result.success;
+          }
         } else if (action.type === 'save_rendezvous' || action.type === 'update_rendezvous') {
-          const res = await fetch('/api/rendezvous', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ rendezvous: action.payload }),
-          });
-          success = res.ok;
+          try {
+            const res = await fetch('/api/rendezvous', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ rendezvous: action.payload }),
+            });
+            success = res.ok;
+          } catch {
+            success = false;
+          }
+
+          // Direct Supabase fallback
+          if (!success && isSupabaseConfigured && supabase && action.payload) {
+            const r = action.payload;
+            const { error } = await supabase.from('rendezvous').upsert({
+              id: r.id,
+              establishment_id: r.establishmentId || null,
+              establishment_name: r.establishmentName,
+              promoter_name: r.promoterName || '',
+              promoter_phone: r.promoterPhone || '',
+              district: r.district || '',
+              address: r.address || '',
+              date: r.date,
+              time: r.time || '10:00',
+              motif: r.motif || 'recouvrement',
+              status: r.status || 'programme',
+              assigned_agent_badge: r.assignedAgentBadge,
+              assigned_agent_name: r.assignedAgentName,
+              updated_at: new Date().toISOString(),
+            });
+            success = !error;
+          }
         }
 
         if (success) {

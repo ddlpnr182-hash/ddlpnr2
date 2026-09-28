@@ -1,0 +1,24 @@
+{
+  "name": "Système Intégré DDL-PN — République du Congo",
+  "short_name": "DDL-PN Mobile",
+  "description": "Système officiel de gestion des loisirs, carnet mobile de terrain (SAA) et poste de commandement de la Direction Départementale des Loisirs de Pointe-Noire (MCAPNIT).",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#1A3C5E",
+  "theme_color": "#1A3C5E",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/logo_ddl_pnr.jpg",
+      "sizes": "192x192 512x512",
+      "type": "image/jpeg",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/armoirie_congo.jpg",
+      "sizes": "192x192 512x512",
+      "type": "image/jpeg",
+      "purpose": "any maskable"
+    }
+  ]
+}

@@ -22,6 +22,7 @@ import {
   LEISURE_ACTIVITY_TYPES,
   getQuartiersForArrondissement,
 } from '../lib/referentielLoisirs.ts';
+import { QRCodeSecure } from './QRCodeSecure.tsx';
 
 export type { FieldEstablishment, AgentAccount };
 
@@ -2751,182 +2752,212 @@ export const ModuleTerrainRecouvrement: React.FC<ModuleTerrainRecouvrementProps>
             </div>
 
             {/* Official Document Sheet Preview */}
-            <div ref={docViewRef} className="p-6 sm:p-8 bg-white border border-[#c4c7d4] rounded shadow-inner font-serif text-xs text-[#161c27] space-y-4 leading-relaxed">
-              {/* Header */}
-              <div className="flex justify-between items-start text-[10px] font-sans">
-                <div>
-                  <p className="font-bold text-[#022448] uppercase">MINISTÈRE DE LA CULTURE, DES ARTS,</p>
-                  <p className="font-bold text-[#022448] uppercase">DU PATRIMOINE NATIONAL ET DU TOURISME</p>
-                  <p className="text-[#43474e]">DIRECTION GÉNÉRALE DES LOISIRS</p>
-                  <p className="font-bold text-[#006d2f]">DIRECTION DÉPARTEMENTALE DE POINTE-NOIRE</p>
-                  <p className="font-mono mt-1 text-[#747783]">
-                    {activeDocView.type === 'FICHE_ENQUETE' && `RÉF : DDL-PN/SAA/ENQ-2026-${activeDocView.est.id.replace('EST-', '')}`}
-                    {activeDocView.type === 'ORDRE_SERVICE' && 'RÉF : N° 028/MCAPNIT/DGL/DDL-PN'}
-                    {activeDocView.type === 'CONVOCATION' && `RÉF : CONV-DDL-PN-2026-${activeDocView.est.id.replace('EST-', '')}`}
-                    {activeDocView.type === 'ATTESTATION' && `RÉF : DDL-PN/SAA/ATT-2026-${activeDocView.est.id.replace('EST-', '')}`}
-                    {activeDocView.type === 'MISE_EN_DEMEURE' && `RÉF : DDL-PN/SAA/MED-2026-${activeDocView.est.id.replace('EST-', '')}`}
-                  </p>
-                </div>
-                <div className="text-right">
-                  <p className="font-bold text-[#022448] uppercase">RÉPUBLIQUE DU CONGO</p>
-                  <p className="italic text-[#43474e]">Unité - Travail - Progrès</p>
-                  <div className="flex justify-end mt-1">
-                    <RepublicSeal size={32} />
-                  </div>
-                </div>
-              </div>
+            <div ref={docViewRef} className="p-6 sm:p-10 bg-white border border-[#c4c7d4] rounded shadow-inner font-serif text-xs text-[#161c27] space-y-5 leading-relaxed">
+              
+              {activeDocView.type === 'ATTESTATION' ? (
+                /* ======================================================== */
+                /* MODÈLE OFFICIEL DDL-PN : ATTESTATION DE DEPOT           */
+                /* ======================================================== */
+                <div className="space-y-6 text-[#111827]">
+                  {/* Header 2 Colonnes avec QR Code officiel en haut à droite */}
+                  <div className="flex justify-between items-start gap-4 pb-4">
+                    <div className="text-left font-sans text-[10px] space-y-1 w-[60%]">
+                      <p className="font-bold text-[#022448] uppercase leading-tight tracking-tight">
+                        MINISTÈRE DE LA CULTURE, DES ARTS,<br />
+                        DU PATRIMOINE NATIONAL ET DE L'INDUSTRIE TOURISTIQUE
+                      </p>
+                      <p className="font-bold text-gray-800 text-[10px] mt-1">DIRECTION GÉNÉRALE DES LOISIRS</p>
+                      <div className="w-16 border-t border-dashed border-gray-400 my-1"></div>
+                      <p className="font-bold text-[#006d2f] text-[10px]">DIRECTION DÉPARTEMENTALE DES LOISIRS</p>
+                      <p className="font-bold text-gray-900 text-[10px]">DÉPARTEMENT DE POINTE — NOIRE</p>
+                      <div className="w-16 border-t border-dashed border-gray-400 my-1"></div>
+                      <p className="text-[10px] font-semibold text-gray-700">SERVICE ADMINISTRATIF, FINANCIER ET MATÉRIEL</p>
+                      <div className="w-16 border-t border-dashed border-gray-400 my-1"></div>
+                      <p className="font-mono font-bold text-gray-900 text-[11px] pt-1">
+                        N° <u>{activeDocView.est.id ? activeDocView.est.id.replace(/[^0-9]/g, '').slice(-3) || '033' : '033'}</u> /MCAPNIT/DGL/DDLPN/SAFM
+                      </p>
+                    </div>
 
-              {/* Tricolor line */}
-              <div className="h-0.5 w-full flex">
-                <div className="h-full w-1/3 bg-[#006d2f]"></div>
-                <div className="h-full w-1/3 bg-[#fbbf24]"></div>
-                <div className="h-full w-1/3 bg-[#dc2626]"></div>
-              </div>
-
-              {/* Document Title */}
-              <div className="text-center space-y-1">
-                <h3 className="font-garamond text-xl font-bold uppercase text-[#022448]">
-                  {activeDocView.type === 'FICHE_ENQUETE' && "FICHE D'ENQUÊTE DE COMMODO & INCOMMODO / CONFORMITÉ TECHNIQUE"}
-                  {activeDocView.type === 'ORDRE_SERVICE' && 'ORDRE DE SERVICE N° 028/MCAPNIT/DGL/DDL-PN'}
-                  {activeDocView.type === 'CONVOCATION' && "CONVOCATION OFFICIELLE À SE PRÉSENTER AU BUREAU"}
-                  {activeDocView.type === 'ATTESTATION' && 'ATTESTATION PROVISOIRE DE DÉPÔT DE DOSSIER'}
-                  {activeDocView.type === 'MISE_EN_DEMEURE' && 'MISE EN DEMEURE OFFICIELLE AVANT FERMETURE ADMINISTRATIVE'}
-                </h3>
-                <p className="text-[11px] font-sans italic text-[#747783]">
-                  {activeDocView.type === 'FICHE_ENQUETE' && "Visite technique in situ préalable à l'homologation & perception des droits légaux"}
-                  {activeDocView.type === 'ORDRE_SERVICE' && 'Mission départementale de recensement, contrôle et recouvrement forcé des loisirs'}
-                  {activeDocView.type === 'CONVOCATION' && "Notification sur le terrain • Délai et heure limites de présentation fixés manuellement"}
-                  {activeDocView.type === 'ATTESTATION' && 'Valable pendant l’instruction préalable à la transmission à la Direction Générale (Brazzaville)'}
-                  {activeDocView.type === 'MISE_EN_DEMEURE' && 'Délai légal de rigueur : 8 jours (ou 72h) à compter de la présente notification'}
-                </p>
-              </div>
-
-              {/* Body Content according to type */}
-              {activeDocView.type === 'FICHE_ENQUETE' && (
-                <div className="space-y-3 font-sans text-xs">
-                  <div className="p-3 bg-gray-50 border-l-4 border-[#006d2f] space-y-1 text-xs">
-                    <div className="font-bold text-[#006d2f] uppercase text-[10px]">1. Identification du Site :</div>
-                    <p><strong>Établissement :</strong> {activeDocView.est.name} ({activeDocView.est.activityLabel})</p>
-                    <p><strong>Promoteur :</strong> {activeDocView.est.promoter} • Tél : {activeDocView.est.phone}</p>
-                    <p><strong>Adresse :</strong> {activeDocView.est.district} — {activeDocView.est.address}</p>
-                    <p><strong>Superficie mesurée :</strong> {activeDocView.est.surfaceSqm} m² • <strong>Régime :</strong> Secteur {activeDocView.est.sector === 'formal' ? 'Formel (RCCM)' : 'Informel'}</p>
-                  </div>
-
-                  <div className="p-3 bg-[#f8faff] rounded border border-[#dde2f3] space-y-1.5">
-                    <div className="font-bold text-[#022448] uppercase text-[10px]">2. Constatations Techniques in Situ :</div>
-                    <div className="grid grid-cols-2 gap-2 text-[11px]">
-                      <div>&bull; Insonorisation : Conforme seuils légaux</div>
-                      <div>&bull; Sécurité Incendie : Extincteurs vérifiés</div>
-                      <div>&bull; Issues de Secours : Dégagées &amp; conformes</div>
-                      <div>&bull; Salubrité &amp; Sanitaires : Hommes/Femmes séparés</div>
+                    <div className="text-right flex flex-col items-end w-[38%] space-y-1">
+                      <p className="font-bold text-black uppercase text-[11px] font-sans tracking-wide">RÉPUBLIQUE DU CONGO</p>
+                      <p className="italic text-gray-600 text-[10px] font-serif">Unité-Travail-Progrès</p>
+                      <div className="pt-2">
+                        <QRCodeSecure
+                          size={90}
+                          value={`https://www.loisirs.cg/attestation?ref=${encodeURIComponent(activeDocView.est.id)}&est=${encodeURIComponent(activeDocView.est.name)}&promoter=${encodeURIComponent(activeDocView.est.promoter)}`}
+                          label="Certification DDL-PN"
+                          showVerifyButton={false}
+                          metadata={{
+                            reference: `ATT-DDLPN-${activeDocView.est.id}`,
+                            establishmentName: activeDocView.est.name,
+                            promoterName: activeDocView.est.promoter,
+                            agentName: 'Directeur Jean Richard NTSEKE NGOUAKA',
+                            agentBadge: 'DDL-PN-DIR-001',
+                            date: activeDocView.est.identifiedDate || new Date().toLocaleDateString('fr-FR'),
+                            type: 'ATTESTATION'
+                          }}
+                        />
+                      </div>
                     </div>
                   </div>
 
-                  <div className="p-3 bg-[#f0fdf4] rounded border border-[#bbf7d0] flex justify-between items-center text-xs">
+                  {/* Grand Titre Officiel */}
+                  <div className="text-center py-4">
+                    <h2 className="font-serif text-2xl font-bold uppercase tracking-wider text-black underline underline-offset-8 decoration-2">
+                      ATTESTATION DE DEPOT
+                    </h2>
+                  </div>
+
+                  {/* Corps de texte officiel conforme au modèle scanné */}
+                  <div className="space-y-6 text-justify text-[13px] leading-relaxed font-serif px-2 sm:px-4">
+                    <p className="leading-loose">
+                      Par la présente, je soussigné, Directeur Départemental des Loisirs de Pointe-Noire, atteste que <strong>Madame / Monsieur {activeDocView.est.promoter.toUpperCase()}</strong> a déposé un dossier en cours d'étude pour solliciter une autorisation d'exploitation provisoire d'une {activeDocView.est.activityLabel || 'structure de loisirs'} dénommée <strong>«{activeDocView.est.name.toUpperCase()}»</strong>, ayant pour adresse le Quartier {activeDocView.est.district} {activeDocView.est.address ? `(${activeDocView.est.address})` : ''}.
+                    </p>
+
+                    <p className="pt-2 font-serif text-[13px]">
+                      En foi de quoi la présente attestation lui est établie pour servir et valoir ce que de droit. /-
+                    </p>
+                  </div>
+
+                  {/* Pied de signature officiel */}
+                  <div className="pt-8 flex justify-end font-serif text-[13px]">
+                    <div className="text-center w-72 space-y-1">
+                      <p>Fait à Pointe - Noire, le {activeDocView.est.identifiedDate || new Date().toLocaleDateString('fr-FR')}</p>
+                      <div className="pt-2">
+                        <p className="font-semibold leading-tight">Directeur Départemental des Loisirs</p>
+                        <p className="font-semibold leading-tight">de Pointe-Noire</p>
+                        <div className="h-14 flex items-center justify-center text-gray-300 italic text-[11px]">
+                          [Sceau &amp; Signature Officielle]
+                        </div>
+                        <p className="font-bold text-base text-[#022448] tracking-wide pt-1">
+                          Jean Richard NTSEKE NGOUAKA
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Bandeau de contact officiel de la Direction */}
+                  <div className="pt-6 mt-6 border-t border-gray-300 text-center text-[10px] font-sans text-gray-600 space-y-0.5">
+                    <p className="font-bold text-gray-800">Direction Départementale des Loisirs de Pointe-Noire (DDL-PN)</p>
+                    <p>
+                      📞 Téléphone : <strong className="text-black">+242 06 186 4275</strong> • ✉️ Email : <strong className="text-black">ddloisirs_pnr@loisirs.cg</strong> • 🌐 Site Web : <strong className="text-black">www.loisirs.cg</strong>
+                    </p>
+                  </div>
+                </div>
+              ) : (
+                /* Autres documents existants (Fiche enquête, Ordre de service, Mise en demeure...) */
+                <>
+                  {/* Header */}
+                  <div className="flex justify-between items-start text-[10px] font-sans">
                     <div>
-                      <span className="font-bold text-[#15803d] block">Frais Fixes d'Enquête de Commodo &amp; Incommodo :</span>
-                      <span className="text-[10px] text-[#747783]">Quittance de perception immédiate &bull; Clé légale 50/50</span>
+                      <p className="font-bold text-[#022448] uppercase">MINISTÈRE DE LA CULTURE, DES ARTS,</p>
+                      <p className="font-bold text-[#022448] uppercase">DU PATRIMOINE NATIONAL ET DE L'INDUSTRIE TOURISTIQUE</p>
+                      <p className="text-[#43474e]">DIRECTION GÉNÉRALE DES LOISIRS</p>
+                      <p className="font-bold text-[#006d2f]">DIRECTION DÉPARTEMENTALE DE POINTE-NOIRE</p>
+                      <p className="font-mono mt-1 text-[#747783]">
+                        {activeDocView.type === 'FICHE_ENQUETE' && `RÉF : DDL-PN/SAA/ENQ-2026-${activeDocView.est.id.replace('EST-', '')}`}
+                        {activeDocView.type === 'ORDRE_SERVICE' && 'RÉF : N° 028/MCAPNIT/DGL/DDL-PN'}
+                        {activeDocView.type === 'CONVOCATION' && `RÉF : CONV-DDL-PN-2026-${activeDocView.est.id.replace('EST-', '')}`}
+                        {activeDocView.type === 'MISE_EN_DEMEURE' && `RÉF : DDL-PN/SAA/MED-2026-${activeDocView.est.id.replace('EST-', '')}`}
+                      </p>
                     </div>
-                    <span className="font-mono text-base font-bold text-[#006d2f]">30 000 FCFA</span>
-                  </div>
-
-                  <div className="p-3 bg-[#fff7ed] rounded border border-[#fed7aa] text-xs">
-                    <span className="font-bold text-[#c2410c] block">Avis Technique du Service SAA :</span>
-                    <p className="italic text-[#43474e] mt-0.5">
-                      « Avis Favorable sous réserve de maintenir les limiteurs sonores nocturnes en bon état et de respecter l'échéancier convenu pour la redevance départementale. »
-                    </p>
-                  </div>
-                </div>
-              )}
-
-              {activeDocView.type === 'ORDRE_SERVICE' && (
-                <div className="space-y-3 font-serif text-[12px] leading-relaxed">
-                  <p className="font-sans font-bold text-[#022448] text-xs uppercase">
-                    Le Directeur Départemental des Loisirs de Pointe-Noire ordonne :
-                  </p>
-                  <p>
-                    <strong>ARTICLE 1er :</strong> Il est prescrit une mission de recensement exhaustif, de contrôle de conformité technique et de recouvrement forcé des droits et redevances dus par les établissements de loisirs marchands implantés dans le Département de Pointe-Noire.
-                  </p>
-                  <p>
-                    <strong>ARTICLE 2 :</strong> Sont désignés pour exécuter la présente mission sous la direction de M. Jacques Alphonse MATOKO (Chef de Service SAA) : les agents assermentés munis de leurs ordres de mission et badges officiels, assistés de la régie d'avances pour l'encaissement immédiat contre quittance officielle.
-                  </p>
-                  <p>
-                    <strong>ARTICLE 3 :</strong> Tout exploitant en défaut de paiement ou non immatriculé fera l'objet d'une enquête de commodo et incommodo (30 000 FCFA), d'une liquidation au m², et d'une Mise en Demeure sous 8 jours en cas de réfraction.
-                  </p>
-                  <p>
-                    <strong>ARTICLE 4 :</strong> Les forces de police et autorités municipales sont requises de prêter main-forte aux agents de la DDL-PN.
-                  </p>
-                </div>
-              )}
-
-              {activeDocView.type === 'CONVOCATION' && (
-                <div className="space-y-3 font-serif text-[12px]">
-                  <p>Convocation officielle notifiée à l'exploitant sur le terrain :</p>
-                  <div className="p-3 bg-[#f0fdf4] border-l-4 border-[#16a34a] font-sans text-xs space-y-1">
-                    <p><strong>Établissement Convoqué : </strong> {activeDocView.est.name}</p>
-                    <p><strong>Promoteur / Tenancier : </strong> {activeDocView.est.promoter} &bull; Tél : {activeDocView.est.phone}</p>
-                    <p><strong>Activité &amp; Localisation : </strong> {activeDocView.est.activityLabel} — {activeDocView.est.district}</p>
-                    <div className="pt-2 mt-2 border-t border-[#bbf7d0] text-sm font-bold text-[#022448]">
-                      📅 Date et Heure fixées manuellement : <span className="text-[#16a34a] underline font-black">{activeDocView.est.nextDueDate}</span> {activeDocView.est.nextAppointmentTime ? `à ${activeDocView.est.nextAppointmentTime}` : ''}
+                    <div className="text-right">
+                      <p className="font-bold text-[#022448] uppercase">RÉPUBLIQUE DU CONGO</p>
+                      <p className="italic text-[#43474e]">Unité - Travail - Progrès</p>
+                      <div className="flex justify-end mt-1">
+                        <RepublicSeal size={32} />
+                      </div>
                     </div>
-                    <p className="text-[11px] text-gray-700">
-                      🏢 <strong>Lieu de Présentation :</strong> {activeDocView.est.convocationOffice || 'Service Autorisation & Animation (SAA) - Bureau N° 4, Direction Départementale des Loisirs, Avenue Moe Pratt, Pointe-Noire'}
-                    </p>
                   </div>
-                  <p className="text-gray-800 leading-relaxed font-sans text-xs">
-                    <strong>OBJET :</strong> Identification sur le terrain, immatriculation au répertoire départemental et fixation/recouvrement des droits d'exploitation touristique.
-                  </p>
-                  <p className="text-gray-800 leading-relaxed font-sans text-[11px]">
-                    <strong>PIÈCES À PRODUIRE AU BUREAU :</strong> Pièce d'identité (CNI/Passeport), registre RCCM/NIU (si formel), titre d'occupation des lieux, justificatifs de versements antérieurs.
-                  </p>
-                  <div className="p-2.5 bg-[#fee2e2] rounded-lg border border-[#f87171] text-[#991b1b] text-[11px] font-sans font-bold">
-                    ⚠️ AVERTISSEMENT : En cas de non-présentation à la date et heure ci-dessus fixées d'autorité, il sera procédé à la fermeture administrative immédiate de l'établissement sous scellés.
-                  </div>
-                </div>
-              )}
 
-              {activeDocView.type === 'ATTESTATION' && (
-                <div className="space-y-3 font-serif text-[12px]">
-                  <p>Le Directeur Départemental des Loisirs de Pointe-Noire soussigné, atteste que l'établissement dénommé :</p>
-                  <div className="p-3 bg-gray-50 border-l-4 border-[#022448] font-sans text-xs space-y-1">
-                    <p><strong>Dénomination : </strong> {activeDocView.est.name}</p>
-                    <p><strong>Promoteur / Exploitant : </strong> {activeDocView.est.promoter}</p>
-                    <p><strong>Activité déclarée : </strong> {activeDocView.est.activityLabel} (Superficie : {activeDocView.est.surfaceSqm} m²)</p>
-                    <p><strong>Localisation : </strong> {activeDocView.est.district} — {activeDocView.est.address}</p>
-                    <p><strong>Statut Fiscal : </strong> Secteur {activeDocView.est.sector === 'formal' ? 'Formel' : 'Informel'} (Régularisation en cours)</p>
+                  {/* Tricolor line */}
+                  <div className="h-0.5 w-full flex">
+                    <div className="h-full w-1/3 bg-[#006d2f]"></div>
+                    <div className="h-full w-1/3 bg-[#fbbf24]"></div>
+                    <div className="h-full w-1/3 bg-[#dc2626]"></div>
                   </div>
-                  <p>
-                    A satisfait aux formalités de dépôt initial de dossier et s'est acquitté des premières échéances réglementaires. La présente attestation lui confère la tolérance d'exploitation temporaire, dans l'attente de la décision définitive de la <strong>Direction Générale des Loisirs à Brazzaville</strong>, seule autorité habilitée à délivrer l'Autorisation d'Exploitation finale.
-                  </p>
-                </div>
-              )}
 
-              {activeDocView.type === 'MISE_EN_DEMEURE' && (
-                <div className="space-y-3 font-serif text-[12px]">
-                  <p>Notification officielle à l'exploitant :</p>
-                  <div className="p-3 bg-[#fee2e2] border-l-4 border-[#dc2626] font-sans text-xs space-y-1">
-                    <p><strong>Établissement Sommé : </strong> {activeDocView.est.name}</p>
-                    <p><strong>Promoteur : </strong> {activeDocView.est.promoter} &bull; Tél : {activeDocView.est.phone}</p>
-                    <p><strong>Montant Restant Dû : </strong> {(activeDocView.est.totalDue - activeDocView.est.paidAmount).toLocaleString('fr-FR')} FCFA</p>
+                  {/* Document Title */}
+                  <div className="text-center space-y-1">
+                    <h3 className="font-garamond text-xl font-bold uppercase text-[#022448]">
+                      {activeDocView.type === 'FICHE_ENQUETE' && "FICHE D'ENQUÊTE DE COMMODO & INCOMMODO / CONFORMITÉ TECHNIQUE"}
+                      {activeDocView.type === 'ORDRE_SERVICE' && 'ORDRE DE SERVICE N° 028/MCAPNIT/DGL/DDL-PN'}
+                      {activeDocView.type === 'CONVOCATION' && "CONVOCATION OFFICIELLE À SE PRÉSENTER AU BUREAU"}
+                      {activeDocView.type === 'MISE_EN_DEMEURE' && 'MISE EN DEMEURE OFFICIELLE AVANT FERMETURE ADMINISTRATIVE'}
+                    </h3>
                   </div>
-                  <p className="text-[#991b1b] font-semibold">
-                    EST FORMELLEMENT MIS EN DEMEURE de régulariser ses droits d'exploitation et de solder son échéance de retard sous un délai impératif de <strong>HUIT (8) JOURS</strong>. Passé ce délai, la Direction Départementale procédera à la <strong>FERMETURE ADMINISTRATIVE IMMÉDIATE</strong> de l'établissement avec pose de scellés et recours à la Force Publique.
-                  </p>
-                </div>
-              )}
 
-              {/* Signatures */}
-              <div className="flex justify-between pt-6 font-sans text-[11px] border-t border-[#edf0fa]">
-                <div>
-                  <p className="text-[#747783]">L'Agent Enquêteur / Chef SAA</p>
-                  <p className="font-bold mt-8">Jacques Alphonse MATOKO</p>
-                </div>
-                <div className="text-right">
-                  <p className="text-[#747783]">Pointe-Noire, le {new Date().toLocaleDateString('fr-FR')}</p>
-                  <p className="font-bold">Pour le Directeur Départemental,</p>
-                  <p className="font-bold mt-8 text-[#022448]">Jean Richard NTSEKE NGOUAKA</p>
-                </div>
-              </div>
+                  {/* Body Content */}
+                  {activeDocView.type === 'FICHE_ENQUETE' && (
+                    <div className="space-y-3 font-sans text-xs">
+                      <div className="p-3 bg-gray-50 border-l-4 border-[#006d2f] space-y-1 text-xs">
+                        <div className="font-bold text-[#006d2f] uppercase text-[10px]">1. Identification du Site :</div>
+                        <p><strong>Établissement :</strong> {activeDocView.est.name} ({activeDocView.est.activityLabel})</p>
+                        <p><strong>Promoteur :</strong> {activeDocView.est.promoter} • Tél : {activeDocView.est.phone}</p>
+                        <p><strong>Adresse :</strong> {activeDocView.est.district} — {activeDocView.est.address}</p>
+                        <p><strong>Superficie mesurée :</strong> {activeDocView.est.surfaceSqm} m² • <strong>Régime :</strong> Secteur {activeDocView.est.sector === 'formal' ? 'Formel (RCCM)' : 'Informel'}</p>
+                      </div>
+                    </div>
+                  )}
+
+                  {activeDocView.type === 'ORDRE_SERVICE' && (
+                    <div className="space-y-3 font-serif text-[12px] leading-relaxed">
+                      <p className="font-sans font-bold text-[#022448] text-xs uppercase">
+                        Le Directeur Départemental des Loisirs de Pointe-Noire ordonne :
+                      </p>
+                      <p>
+                        <strong>ARTICLE 1er :</strong> Il est prescrit une mission de recensement exhaustif, de contrôle de conformité technique et de recouvrement forcé des droits et redevances dus par les établissements de loisirs marchands implantés dans le Département de Pointe-Noire.
+                      </p>
+                    </div>
+                  )}
+
+                  {activeDocView.type === 'CONVOCATION' && (
+                    <div className="space-y-3 font-serif text-[12px]">
+                      <p>Convocation officielle notifiée à l'exploitant sur le terrain :</p>
+                      <div className="p-3 bg-[#f0fdf4] border-l-4 border-[#16a34a] font-sans text-xs space-y-1">
+                        <p><strong>Établissement Convoqué : </strong> {activeDocView.est.name}</p>
+                        <p><strong>Promoteur / Tenancier : </strong> {activeDocView.est.promoter} • Tél : {activeDocView.est.phone}</p>
+                        <p><strong>Activité &amp; Localisation : </strong> {activeDocView.est.activityLabel} — {activeDocView.est.district}</p>
+                        <div className="pt-2 mt-2 border-t border-[#bbf7d0] text-sm font-bold text-[#022448]">
+                          📅 Date et Heure fixées manuellement : <span className="text-[#16a34a] underline font-black">{activeDocView.est.nextDueDate}</span> {activeDocView.est.nextAppointmentTime ? `à ${activeDocView.est.nextAppointmentTime}` : ''}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {activeDocView.type === 'MISE_EN_DEMEURE' && (
+                    <div className="space-y-3 font-serif text-[12px]">
+                      <p>Notification officielle à l'exploitant :</p>
+                      <div className="p-3 bg-[#fee2e2] border-l-4 border-[#dc2626] font-sans text-xs space-y-1">
+                        <p><strong>Établissement Sommé : </strong> {activeDocView.est.name}</p>
+                        <p><strong>Promoteur : </strong> {activeDocView.est.promoter} • Tél : {activeDocView.est.phone}</p>
+                        <p><strong>Montant Restant Dû : </strong> {(activeDocView.est.totalDue - activeDocView.est.paidAmount).toLocaleString('fr-FR')} FCFA</p>
+                      </div>
+                      <p className="text-[#991b1b] font-semibold">
+                        EST FORMELLEMENT MIS EN DEMEURE de régulariser ses droits d'exploitation sous un délai impératif de <strong>HUIT (8) JOURS</strong>.
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Signatures */}
+                  <div className="flex justify-between pt-6 font-sans text-[11px] border-t border-[#edf0fa]">
+                    <div>
+                      <p className="text-[#747783]">L'Agent Enquêteur / Chef SAA</p>
+                      <p className="font-bold mt-8">Jacques Alphonse MATOKO</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-[#747783]">Pointe-Noire, le {new Date().toLocaleDateString('fr-FR')}</p>
+                      <p className="font-bold">Pour le Directeur Départemental,</p>
+                      <p className="font-bold mt-8 text-[#022448]">Jean Richard NTSEKE NGOUAKA</p>
+                    </div>
+                  </div>
+
+                  {/* Bandeau de contact officiel */}
+                  <div className="pt-4 border-t border-gray-200 text-center text-[10px] font-sans text-gray-500">
+                    Direction Départementale des Loisirs de Pointe-Noire • Tél : +242 06 186 4275 • Email : ddloisirs_pnr@loisirs.cg • www.loisirs.cg
+                  </div>
+                </>
+              )}
             </div>
 
             <div className="flex justify-end gap-2">

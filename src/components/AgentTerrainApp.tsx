@@ -65,6 +65,7 @@ import {
   LEISURE_ACTIVITY_TYPES,
   getQuartiersForArrondissement,
 } from '../lib/referentielLoisirs.ts';
+import { QRCodeSecure } from './QRCodeSecure.tsx';
 
 interface AgentTerrainAppProps {
   establishments: FieldEstablishment[];
@@ -2145,13 +2146,31 @@ export const AgentTerrainApp: React.FC<AgentTerrainAppProps> = ({
                 </p>
 
                 <div className="pt-2 border-t border-gray-200 flex justify-between items-end text-[10px] text-gray-600">
-                  <div>
+                  <div className="space-y-1">
                     <span>Délivré sur le terrain par l'Agent Assermenté :</span>
                     <p className="font-bold text-black">{activeConvocation.agentName} ({activeConvocation.agentBadge})</p>
+                    <div className="pt-1">
+                      <QRCodeSecure
+                        size={80}
+                        value={`https://ddl-pn.gouv.cg/verifier?ref=${encodeURIComponent(activeConvocation.ref)}&est=${encodeURIComponent(activeConvocation.estName)}&date=${encodeURIComponent(activeConvocation.date)}&agent=${encodeURIComponent(activeConvocation.agentBadge)}`}
+                        label="Scannez pour certifier"
+                        showVerifyButton={false}
+                        metadata={{
+                          reference: activeConvocation.ref,
+                          establishmentName: activeConvocation.estName,
+                          promoterName: activeConvocation.promoter,
+                          agentName: activeConvocation.agentName,
+                          agentBadge: activeConvocation.agentBadge,
+                          date: `${activeConvocation.date} à ${activeConvocation.time}`,
+                          type: 'CONVOCATION'
+                        }}
+                      />
+                    </div>
                   </div>
                   <div className="text-right">
                     <span>Pointe-Noire, le {new Date().toLocaleDateString('fr-FR')}</span>
                     <p className="font-serif italic font-bold">Pour le Directeur Départemental</p>
+                    <p className="text-[9px] text-[#006d2f] font-semibold mt-1">DDL-PN / RÉPUBLIQUE DU CONGO</p>
                   </div>
                 </div>
               </div>

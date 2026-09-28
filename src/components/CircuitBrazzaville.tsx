@@ -2,6 +2,7 @@ import React, { useState, useRef } from 'react';
 import { RepublicSeal } from './RepublicSeal.tsx';
 import { FieldEstablishment } from '../lib/supabase.ts';
 import { printElement } from '../lib/printUtils.ts';
+import { QRCodeSecure } from './QRCodeSecure.tsx';
 
 export interface CircuitBrazzavilleProps {
   establishments: FieldEstablishment[];
@@ -571,7 +572,7 @@ export const CircuitBrazzaville: React.FC<CircuitBrazzavilleProps> = ({
               </p>
             </div>
 
-            {/* Signatures */}
+            {/* Signatures & Certification QR Code */}
             <div className="pt-8 flex justify-between items-end font-sans text-xs">
               <div className="text-center">
                 <p className="font-bold">Pour le Secrétariat / Régie</p>
@@ -580,6 +581,25 @@ export const CircuitBrazzaville: React.FC<CircuitBrazzavilleProps> = ({
                 </div>
                 <p className="border-t border-gray-400 pt-1 text-[10px]">Mention "Départ" DDL-PN</p>
               </div>
+
+              <div className="flex flex-col items-center">
+                <QRCodeSecure
+                  size={75}
+                  value={`https://ddl-pn.gouv.cg/bordereau?ref=${encodeURIComponent(printingLog.transmittalNumber)}&est=${encodeURIComponent(printingLog.establishmentName)}&tracking=${encodeURIComponent(printingLog.trackingNumber)}`}
+                  label="Certification Transmission DGL"
+                  showVerifyButton={false}
+                  metadata={{
+                    reference: printingLog.transmittalNumber,
+                    establishmentName: printingLog.establishmentName,
+                    promoterName: printingLog.promoter,
+                    agentName: 'Direction MATOKO',
+                    agentBadge: 'DDL-PN-2026-306C5C',
+                    date: printingLog.dateSent,
+                    type: 'ATTESTATION'
+                  }}
+                />
+              </div>
+
               <div className="text-center">
                 <p className="font-bold">Le Directeur Départemental des Loisirs</p>
                 <p className="text-[11px] font-semibold text-[#022448]">Jacques Alphonse MATOKO</p>
